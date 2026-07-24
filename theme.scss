@@ -113,6 +113,18 @@ $code-color: $slate-700;
 // Compact variant for wide tables in narrow columns
 .compact-table table { font-size: 0.62em; }
 .compact-table td, .compact-table th { padding: 0.2em 0.35em; }
+// Shrinks a table's first column to fit its content instead of splitting width evenly.
+// Pandoc always writes a <colgroup><col style="width:X%"> pair for pipe tables, sized off
+// the separator-dash ratio; that inline style beats a plain td/th rule, so col needs !important
+// to win, and it survives markdown table auto-formatters rewriting the dashes either way.
+.fit-col table { table-layout: auto; }
+.fit-col table col:first-child {
+  width: 1% !important;
+}
+.fit-col table th:first-child,
+.fit-col table td:first-child {
+  white-space: nowrap;
+}
 .reveal table th {
   background: $slate-700;
   color: #fff;
@@ -179,3 +191,47 @@ $code-color: $slate-700;
 .dumbbell-toggle button:last-child  { border-radius: 0 20px 20px 0; border-left: none; }
 .dumbbell-toggle button.active-groom { background: #2f4b7c; color: #fff; border-color: #2f4b7c; }
 .dumbbell-toggle button.active-bride { background: #a8456b; color: #fff; border-color: #a8456b; }
+
+// Mean/mode checkboxes, styled to match the pill toggle instead of the browser default
+.db-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #5f6b7a;
+}
+.db-checkbox input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 1.5px solid #cdbfa8;
+  border-radius: 5px;
+  background: #f6f2ea;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.db-checkbox input[type="checkbox"]:hover { border-color: #b5a689; }
+.db-checkbox input[type="checkbox"]:focus-visible { outline: 2px solid #cdbfa8; outline-offset: 2px; }
+.db-checkbox input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+.db-checkbox input[type="checkbox"]:checked::after { opacity: 1; }
+// each checkbox tints to the colour of the mark it toggles, so the control visually
+// previews what checking it will draw on the chart
+.db-checkbox input.chk-mean:checked { background: #ff5a36; border-color: #ff5a36; }
+.db-checkbox input.chk-mode:checked { background: #5fe0c0; border-color: #5fe0c0; }
