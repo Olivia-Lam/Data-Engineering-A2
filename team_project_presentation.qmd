@@ -839,7 +839,7 @@ They are delaying it, and who delays the most is changing.
 |-----------------------|------------------------------------------------|
 | Than Shu En | Interactive dumbbell chart, toggle, and value labels |
 | Natalie Peh | Data sourcing and validation; check finalised visualization alignment with proposal; story flow |
-| Lee Jia Shin | R cleaning and transformation pipeline; reproducibility documentation |
+| Lee Jia Shin =)| R cleaning and transformation pipeline; reproducibility documentation |
 | Pang Shi Qi | Critical analysis and proposed improvements |
 | Olivia Lam Xuan En | Data analysis, statistics, and final document assembly |
 
