@@ -218,7 +218,7 @@ It describes the overall population for that year, not the first-marriage or re-
     </div>
   </div>
   <div class="small" style="padding:4px 8px 4px;font-size:12px;color:#8a8577;">
-    Source: Singapore Department of Statistics, Tables M830169 (median ages) and M830103 (age-band counts).
+    Source: Singapore Department of Statistics, Tables M830169 (median ages) and M830169 (age-band counts).
     Number on each bar is the gap in years. Covid-affected marriage years, 2020&ndash;2021, fall inside the range shown.
     Age-band counts for 2024 are not yet published by SingStat, so the distribution panel has no 2024 option even though the dumbbell does.
   </div>
