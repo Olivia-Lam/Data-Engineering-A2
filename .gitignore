@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+.positai
 
 # rendered output, regenerate from the .qmd instead of committing it
 team_project_presentation.html
