@@ -1,0 +1,858 @@
+---
+title: "Are Singaporeans Marrying Later?"
+subtitle: "Singapore's Shifting Age at First and Re-Marriage"
+author: "AAI1001 Team 3: Pang Shi Qi, Lee Jia Shin, Than Shu En, Natalie Peh, Olivia Lam"
+format:
+  revealjs:
+    theme: [default, theme.scss]
+    slide-number: c/t
+    width: 1100
+    height: 720
+    margin: 0.06
+    transition: fade
+    transition-speed: fast
+    controls: true
+    progress: true
+    history: true
+    incremental: false
+    scrollable: true
+    fig-cap-location: bottom
+    embed-resources: true
+    code-line-numbers: false
+    toc: true
+    toc-title: "Outline"
+    toc-depth: 2
+    menu:
+      side: left
+      numbers: false
+    code-annotations: hover
+execute:
+  echo: false
+  warning: false
+  message: false
+editor:
+  markdown:
+    wrap: sentence
+bibliography: references.bib
+include-in-header:
+  text: |
+    <style>
+    /* Tooltip element for the interactive charts. */
+    #shared-tip {
+      position: fixed;
+      pointer-events: none;
+      background: #23304a;
+      color: #fff;
+      font: 600 11px/1.3 Inter, sans-serif;
+      padding: 5px 9px;
+      border-radius: 6px;
+      opacity: 0;
+      transform: translate(-50%, -100%);
+      transition: opacity .08s ease;
+      z-index: 9999;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    #shared-tip.show { opacity: 1; }
+
+    /* Prevents transition flicker on open/close. */
+    #pipeline-code details.code-fold { transition: none; }
+    </style>
+    <script>
+    // Single source of truth for the median-age series (Table M830169),
+    // read by the dumbbell chart and the A1/A2/A3 analysis charts, so the
+    // same 22 rows aren't repeated in four separate scripts.
+    var MARRIAGE_DATA=[{y:2003,gf:29.1,gr:40.2,bf:26.6,br:34.2},{y:2004,gf:29.4,gr:40.5,bf:26.7,br:34.7},{y:2005,gf:29.8,gr:41.1,bf:26.9,br:34.8},{y:2006,gf:29.7,gr:41.1,bf:27.0,br:35.1},{y:2007,gf:29.8,gr:41.3,bf:27.2,br:35.1},{y:2008,gf:29.8,gr:41.4,bf:27.3,br:35.5},{y:2009,gf:29.8,gr:41.8,bf:27.5,br:35.7},{y:2010,gf:30.0,gr:41.8,bf:27.7,br:36.3},{y:2011,gf:30.1,gr:41.8,bf:28.0,br:36.5},{y:2012,gf:30.1,gr:42.1,bf:28.0,br:36.4},{y:2013,gf:30.2,gr:42.5,bf:28.1,br:36.6},{y:2014,gf:30.2,gr:42.7,bf:28.2,br:37.0},{y:2015,gf:30.3,gr:43.3,bf:28.2,br:37.5},{y:2016,gf:30.3,gr:43.3,bf:28.3,br:37.1},{y:2017,gf:30.0,gr:43.3,bf:28.4,br:37.4},{y:2018,gf:30.2,gr:43.8,bf:28.5,br:37.9},{y:2019,gf:30.4,gr:44.2,bf:28.8,br:38.3},{y:2020,gf:30.4,gr:43.3,bf:28.8,br:38.0},{y:2021,gf:30.5,gr:42.4,bf:29.1,br:37.6},{y:2022,gf:30.7,gr:44.6,bf:29.3,br:39.3},{y:2023,gf:31.0,gr:45.0,bf:29.5,br:39.4},{y:2024,gf:31.1,gr:45.0,bf:29.6,br:39.6}];
+
+    // Tooltip helpers.
+    function getSharedTip(){
+      var t = document.getElementById('shared-tip');
+      if(!t){
+        t = document.createElement('div');
+        t.id = 'shared-tip';
+        document.body.appendChild(t);
+      }
+      return t;
+    }
+    function showTip(evt, html){
+      var t = getSharedTip();
+      t.innerHTML = html;
+      t.style.left = evt.clientX + 'px';
+      t.style.top = (evt.clientY - 10) + 'px';
+      t.classList.add('show');
+    }
+    function hideTip(){
+      var t = document.getElementById('shared-tip');
+      if(t) t.classList.remove('show');
+    }
+
+    // Accordion: closes other open panels.
+    document.addEventListener('DOMContentLoaded', function(){
+      var group = document.querySelectorAll('#pipeline-code details.code-fold');
+      group.forEach(function(d){
+        d.addEventListener('toggle', function(){
+          if(d.open) group.forEach(function(o){ if(o!==d) o.open=false; });
+        });
+      });
+    });
+    </script>
+---
+
+## The question behind the headline {.smaller}
+
+Between 2003 and 2024, the median age at first marriage in Singapore rose from 29.1 to 31.1 for grooms and from 26.6 to 29.6 for brides [@singstat_m830169].
+Among those who remarry, the shift is larger still.
+
+::: box
+Singaporeans are not rejecting marriage.
+They are **delaying** it, and who delays the most is changing.
+:::
+
+Three questions drive our project:
+
+- How wide is the gap between first-marriage and re-marriage age, and has it grown?
+- Are grooms and brides changing at the same pace, or is one moving faster?
+- Can a single interactive chart carry all of that without asking the reader to track four lines at once?
+
+::: small
+Data: Singapore Department of Statistics, Table M830169.
+Original reporting: Mothership.SG (15 July 2024) [@mothership2024].
+:::
+
+## The original visualization {.smaller}
+
+The chart appeared in a Mothership.SG article on Singapore's 2023 marriage and divorce figures, written for a general audience [@mothership2024].
+It plots four series from 2003 to 2023.
+
+::::: columns
+::: {.column width="58%"}
+![Original static four-line chart, Mothership.SG (2024), sourced from SingStat.](https://static.mothership.sg/1/2024/07/Screenshot-2024-07-15-at-7.46.14%E2%80%AFPM.png){width="100%"}
+:::
+
+::: {.column width="42%"}
+**The story it tells**
+
+All four lines climb across twenty years.
+Re-marriage sits roughly ten to fourteen years above first marriage throughout.
+
+The broad message lands in a glance: people are marrying later, first marriage or not.
+:::
+:::::
+
+::: small
+Grooms and brides, at first marriage and re-marriage.
+Median age on the y-axis, year on the x-axis.
+:::
+
+## What the original does well {.smaller}
+
+::: box
+Four dimensions in one plot: **year** (x-axis), **median age** (y-axis), **gender** (colour), **marriage type** (line style).
+No flipping between charts.
+:::
+
+- **Solid versus dashed reads intuitively.** A dashed line for re-marriage follows a visual grammar most readers already know, so the two marriage types separate without constant legend checks.
+- **Direct data labels remove guesswork.** Values are printed beside plotted points, which matters for a static image with no hover tooltip to fall back on.
+- **The warm colour pairing stays coherent.** Red for grooms and orange for brides read as one family with two variants, suiting two genders inside one institution.
+
+A non-specialist takes in the headline, that people marry later, within a few seconds.
+
+## Where it falls short {.smaller}
+
+| \# | Weakness |
+|-------------------|-----------------------------------------------------|
+| **W1** | The two closely spaced line pairs are hard to tell apart; the eye keeps returning to the legend |
+| **W2** | The gender comparison readers want is buried under two encodings at once |
+| **W3** | Only four points across twenty years, unevenly spaced, so most of the series is invisible, and the static format can't answer "what was the value in 2017?" either |
+| **W4** | Median age is the only statistic shown; there's no sense of spread, so readers can't tell whether that "typical" age represents most couples or hides a wide range |
+| **W5** | The most interesting number, the closing gender gap, is never shown |
+| **W6** | Red and orange sit close for readers with colour vision deficiency |
+
+::: small
+One root cause: a detailed dataset served through a format, four overlapping lines with four labelled points, that cannot show gaps, trends, distributions, or intermediate values without work from the reader.
+W3 folds together what were originally two separate points (sparse points, and no way to look up a value); on review they were really one problem with two symptoms, so we merged them.
+:::
+
+## Our redesign: an interactive dumbbell {.smaller}
+
+Each bar spans one year, from the first-marriage age to the re-marriage age, so the **gap becomes the visual subject** rather than something the reader calculates.
+A gender toggle shows one set of dumbbells at a time, and hovering any year now opens a linked view of how that year's ages were actually distributed.
+
+| Fixes | Improvement |
+|--------------------------|----------------------------------------------|
+| **W1, W2** | Dumbbell layout toggled by gender, so no second pair of lines competes for attention |
+| **W3** | Every year from 2003 to 2024 plotted, and hovering (not clicking) any row surfaces its exact values, both endpoints labelled for all 22 years |
+| **W4** | A linked distribution panel: for the year under the pointer, it plots the full age-band histogram plus the mean and the mode, not just the single median line the original relies on |
+| **W5** | The numeric gap printed on every connector |
+| **W6** | An interactive toggle; only one gender's colour is ever on screen |
+
+::: small
+The linked distribution panel draws on SingStat's age-band counts, which are published for all marriage orders combined rather than split by first marriage versus re-marriage [@singstat_m830103].
+It describes the overall population for that year, not the first-marriage or re-marriage series specifically.
+:::
+
+## Improved visualization {background-color="#faf8f4"}
+
+```{=html}
+<div class="dumbbell-wrap" style="max-width:1040px;margin:0 auto;">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 6px 4px;flex-wrap:wrap;gap:6px;">
+    <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:20px;color:#23304a;">
+      Median age: first marriage &rarr; re-marriage,
+      <span id="db-gender" style="color:#2f4b7c;">Grooms</span>, 2003&ndash;2024
+    </div>
+    <div class="dumbbell-toggle" role="group" aria-label="Choose gender, hover to switch">
+      <button id="db-btn-groom" class="active-groom">Grooms</button>
+      <button id="db-btn-bride">Brides</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;justify-content:center;">
+    <div style="flex:1 1 600px;min-width:480px;">
+      <div id="db-legend" style="display:flex;gap:22px;padding:0 8px 2px;font-size:13px;color:#5f6b7a;flex-wrap:wrap;"></div>
+      <div id="db-chart" style="width:100%;max-height:66vh;overflow-y:auto;overflow-x:hidden;"></div>
+    </div>
+    <div style="flex:0 0 380px;">
+      <div id="dist-title" style="font-family:Inter,sans-serif;font-weight:600;font-size:13px;color:#23304a;padding:4px 0 2px;">
+        Age-band distribution, hover a year
+      </div>
+      <div id="dist-chart" style="width:100%;"></div>
+    </div>
+  </div>
+  <div class="small" style="padding:4px 8px 4px;font-size:12px;color:#8a8577;">
+    Source: Singapore Department of Statistics, Tables M830169 (median ages) and M830103 (age-band counts).
+    Number on each bar is the gap in years. Covid-affected marriage years, 2020&ndash;2021, fall inside the range shown.
+    Age-band counts for 2024 are not yet published by SingStat, so the distribution panel has no 2024 option even though the dumbbell does.
+  </div>
+</div>
+<script>
+(function(){
+  var DATA=MARRIAGE_DATA; // shared source, defined once in the deck's <head>
+
+  var AGE_BANDS=["Under 20","20-24","25-29","30-34","35-39","40-44","45-49","50-54","55-59","60 & Over"];
+  var BAND_MID=[18,22.5,27.5,32.5,37.5,42.5,47.5,52.5,57.5,65];
+  var GROOM_BANDS={2003:[139,2103,8923,5613,2476,1323,714,373,179,119],2004:[129,2138,8259,5812,2665,1492,851,480,200,163],2005:[120,2056,7936,5960,2873,1795,1108,607,314,223],2006:[125,1985,8505,6327,2929,1613,1064,610,312,236],2007:[116,1899,8468,6398,3040,1771,1078,610,347,239],2008:[130,1823,8847,6510,3216,1768,1052,623,361,266],2009:[106,1783,9378,6923,3486,1800,1162,728,391,324],2010:[99,1696,8297,6686,3310,1746,1154,673,397,305],2011:[101,1698,9275,7771,3679,1842,1221,815,473,383],2012:[84,1907,9429,8012,3744,1907,1201,794,438,420],2013:[81,1675,8745,7765,3508,1826,1094,766,425,369],2014:[70,1625,9834,8444,3697,2053,1090,764,456,374],2015:[72,1534,9698,8524,3689,2024,1106,747,486,442],2016:[52,1415,9838,8359,3681,1941,1076,700,439,470],2017:[58,1376,10494,8102,3623,1925,1047,690,464,433],2018:[40,1295,9722,7891,3579,1757,1099,699,465,460],2019:[53,1129,8623,7795,3471,1665,1033,659,492,514],2020:[40,1127,7841,7242,2990,1409,854,490,324,334],2021:[32,1229,9759,9899,3716,1570,830,545,374,375],2022:[38,1134,9501,10133,3873,1812,1043,741,513,601],2023:[40,976,8630,9725,3883,1938,1125,767,552,674]};
+  var BRIDE_BANDS={2003:[620,5639,9798,3539,1254,616,318,114,49,15],2004:[683,5493,9450,3868,1441,668,354,140,58,34],2005:[731,5331,9634,4216,1645,770,398,165,69,33],2006:[636,5114,10317,4479,1681,825,377,158,81,38],2007:[643,4791,10528,4680,1825,819,399,186,62,33],2008:[562,4699,11013,4798,1900,890,421,187,83,43],2009:[503,4770,11773,5226,2117,846,462,228,110,46],2010:[471,4192,10748,5185,2065,812,509,243,87,51],2011:[408,4444,12123,5972,2266,1069,528,280,99,69],2012:[386,4622,12213,6308,2358,1071,542,244,115,77],2013:[355,4030,11428,6134,2347,1027,517,241,114,61],2014:[286,4042,12820,6704,2390,1127,566,287,117,68],2015:[278,3772,12763,6713,2501,1183,582,310,121,99],2016:[244,3448,12945,6574,2511,1141,595,292,126,95],2017:[204,3259,13361,6490,2595,1145,623,295,144,96],2018:[159,2997,12467,6464,2555,1119,655,327,154,110],2019:[146,2611,11143,6573,2540,1123,661,343,170,124],2020:[134,2394,9992,5967,2241,915,499,274,137,98],2021:[123,2661,12458,8263,2682,1019,526,324,138,135],2022:[135,2462,12244,8654,2998,1305,775,425,218,173],2023:[111,2113,11374,8509,3180,1475,715,455,197,181]};
+
+  var PAL={
+    groom:{first:'#7b9acc',remar:'#2f4b7c',line:'#b9c6dd',label:'Grooms',title:'#2f4b7c',bandKey:GROOM_BANDS,imgFirst:'assets/groom-1st.png',imgRemar:'assets/groom-2nd.png'},
+    bride:{first:'#d98fae',remar:'#a8456b',line:'#eccddb',label:'Brides',title:'#a8456b',bandKey:BRIDE_BANDS,imgFirst:'assets/bride-1st.png',imgRemar:'assets/bride-2nd.png'}
+  };
+  // Mean/mode colours, contrast-checked directly against the bars they sit
+  // on (WCAG 1.4.11, >=3:1 for graphical objects) -- not against the page
+  // background. A mid-tone hue can't clear 3:1 against both the groom bar
+  // (#2f4b7c) and the bride bar (#a8456b) at once (their luminance is too
+  // close together for that), so both marks use a bright, light colour
+  // instead -- that's the only way to get real separation from either bar
+  // without relying on a halo. Because a colour that bright reads poorly as
+  // *text* on the white/#faf8f4 legend strip, the legend labels ("Mean",
+  // "Mode") stay in the deck's normal dark text colour; only the small
+  // swatch/line next to each label, and the marks inside the chart, use
+  // MEAN_COLOR/MODE_COLOR.
+  var MODE_COLOR='#5fe0c0'; // bright mint: 5.3:1 vs groom bar, 3.5:1 vs bride bar
+  var MEAN_COLOR='#ffd34d'; // bright gold: 6.1:1 vs groom bar, 3.9:1 vs bride bar
+  var LEGEND_TEXT='#23304a'; // deck's standard dark text colour, used for legend labels instead of MEAN_COLOR/MODE_COLOR
+  // The SVG has width="100%" and no fixed CSS height, so its rendered size on screen
+  // is (container width) x (container width * H/W) -- W/H below are a coordinate
+  // system and aspect ratio, not literal on-page pixels. Making rows taller/icons
+  // bigger is done by raising H relative to W (a taller aspect ratio at the same
+  // container width), not by inflating W -- growing W just made the *columns* flex
+  // item request more horizontal space than the slide actually had, which is what
+  // pushed the layout into flex-wrap and knocked the distribution panel below the
+  // fold with no way to scroll back to it. Container width is controlled separately,
+  // by the flex-basis values on the two columns below.
+  var W=1000,H=820,mL=60,mR=48,mT=60,mB=30,iw=W-mL-mR,ih=H-mT-mB,AMIN=25.3,AMAX=46.6;
+  var IMG_R=15; // half-width/height of the endpoint images (was circle r=5, then 9, then 11).
+  // Row height is ih/n =~33px, so a 30px-diameter image still clears its neighbours; going
+  // any bigger than this starts crowding adjacent rows in a 22-row chart.
+  function xs(a){return mL+(a-AMIN)/(AMAX-AMIN)*iw;}
+  var n=DATA.length,rowH=ih/n;
+  function yr(i){return mT+rowH*i+rowH/2;}
+  var COVID=[2020,2021];
+  var currentGender='groom';
+  var hoverYear=2023;
+
+  function esc(v){return v.toFixed(1);}
+
+  function draw(g){
+    currentGender=g;
+    var p=PAL[g];
+    var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Dumbbell chart of median marriage age" style="font-family:Inter,sans-serif;">';
+    for(var a=26;a<=46;a+=2){var gx=xs(a);s+='<line x1="'+gx+'" y1="'+(mT-6)+'" x2="'+gx+'" y2="'+(H-mB+4)+'" stroke="#eee6d8"/>';s+='<text x="'+gx+'" y="'+(mT-12)+'" text-anchor="middle" font-size="11" fill="#9aa2ad">'+a+'</text>';}
+    s+='<text x="'+(mL+iw/2)+'" y="16" text-anchor="middle" font-size="12" fill="#5f6b7a">Median age (years)</text>';
+    for(var i=0;i<n;i++){
+      var d=DATA[i],yy=yr(i);
+      var x1=xs(g==='groom'?d.gf:d.bf),x2=xs(g==='groom'?d.gr:d.br);
+      var v1=(g==='groom'?d.gf:d.bf),v2=(g==='groom'?d.gr:d.br),gap=v2-v1;
+      var isC=COVID.indexOf(d.y)>-1;
+      var isHover=(d.y===hoverYear);
+      s+='<rect x="0" y="'+(yy-rowH/2)+'" width="'+W+'" height="'+rowH+'" fill="'+(isHover?'rgba(181,101,29,0.08)':'transparent')+'" class="db-row" data-year="'+d.y+'"/>';
+      s+='<text x="'+(mL-14)+'" y="'+(yy+4)+'" text-anchor="end" font-size="12.5" fill="'+(isC?'#b5651d':'#5f6b7a')+'" font-weight="'+(isC?'700':'500')+'">'+d.y+'</text>';
+      s+='<line x1="'+x1+'" y1="'+yy+'" x2="'+x2+'" y2="'+yy+'" stroke="'+p.line+'" stroke-width="4" stroke-linecap="round"/>';
+      s+='<text x="'+((x1+x2)/2)+'" y="'+(yy-7)+'" text-anchor="middle" font-size="11" fill="#7a8494" font-weight="600">'+gap.toFixed(1)+'</text>';
+      // Endpoint markers: a small "1st"/"2nd" marriage badge icon per gender, in place of a plain circle.
+      // Expects assets/groom-1st.png, assets/groom-2nd.png, assets/bride-1st.png, assets/bride-2nd.png
+      // saved alongside this .qmd (same size square PNGs; scaled here to 2*IMG_R).
+      s+='<image href="'+p.imgFirst+'" x="'+(x1-IMG_R)+'" y="'+(yy-IMG_R)+'" width="'+(2*IMG_R)+'" height="'+(2*IMG_R)+'"/>';
+      s+='<image href="'+p.imgRemar+'" x="'+(x2-IMG_R)+'" y="'+(yy-IMG_R)+'" width="'+(2*IMG_R)+'" height="'+(2*IMG_R)+'"/>';
+      s+='<text x="'+(x1-IMG_R-4)+'" y="'+(yy+4)+'" text-anchor="end" font-size="11.5" fill="'+p.first+'" font-weight="600">'+esc(v1)+'</text>';
+      s+='<text x="'+(x2+IMG_R+4)+'" y="'+(yy+4)+'" text-anchor="start" font-size="11.5" fill="'+p.remar+'" font-weight="700">'+esc(v2)+'</text>';
+    }
+    s+='</svg>';
+    document.getElementById('db-chart').innerHTML=s;
+    document.getElementById('db-legend').innerHTML='<span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+p.first+';margin-right:6px;"></span>First marriage</span><span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+p.remar+';margin-right:6px;"></span>Re-marriage</span>';
+    var gEl=document.getElementById('db-gender');gEl.textContent=p.label;gEl.style.color=p.title;
+    document.getElementById('db-btn-groom').className=(g==='groom'?'active-groom':'');
+    document.getElementById('db-btn-bride').className=(g==='bride'?'active-bride':'');
+
+    // hover on a row selects its year for the linked distribution panel
+    var rows=document.querySelectorAll('#db-chart .db-row');
+    rows.forEach(function(r){
+      r.addEventListener('mouseenter',function(){
+        hoverYear=Number(r.getAttribute('data-year'));
+        draw(currentGender);
+        drawDist();
+      });
+    });
+    drawDist();
+  }
+
+  function weightedMean(counts){
+    var num=0,den=0;
+    counts.forEach(function(c,i){num+=c*BAND_MID[i];den+=c;});
+    return num/den;
+  }
+  function modeIndex(counts){
+    var best=0;
+    counts.forEach(function(c,i){if(c>counts[best])best=i;});
+    return best;
+  }
+
+  function drawDist(){
+    var title=document.getElementById('dist-title');
+    var target=document.getElementById('dist-chart');
+    var p=PAL[currentGender];
+    var counts=p.bandKey[hoverYear];
+    var DW=410,DH=500,pL=30,pR=10,pT=16,pB=48; // bumped up alongside the dumbbell canvas below
+
+    if(!counts){
+      title.textContent='Age-band distribution: not published for '+hoverYear;
+      target.innerHTML='<svg viewBox="0 0 '+DW+' '+DH+'" width="100%"><text x="'+(DW/2)+'" y="'+(DH/2)+'" text-anchor="middle" font-size="12" fill="#8a8577" font-family="Inter,sans-serif">SingStat has not released 2024 age-band counts yet</text></svg>';
+      return;
+    }
+    title.textContent='Age-band distribution, '+p.label.toLowerCase()+', '+hoverYear+' (all marriage orders combined)';
+
+    var maxCount=Math.max.apply(null,counts);
+    var mean=weightedMean(counts);
+    var mI=modeIndex(counts);
+    var xMin=15,xMax=70;
+    var legendH=26; // reserved strip at the top for the Mean/Mode legend, kept clear of the bars
+    function x(age){return pL+(age-xMin)/(xMax-xMin)*(DW-pL-pR);}
+    var barW=(x(BAND_MID[1])-x(BAND_MID[0]))*0.6;
+    var yBase=DH-pB,yTop=pT+legendH;
+    function y(c){return yBase-(c/maxCount)*(yBase-yTop);}
+
+    var s='<svg viewBox="0 0 '+DW+' '+DH+'" width="100%" role="img" aria-label="Age-band distribution" style="font-family:Inter,sans-serif;">';
+
+    // legend row: swatch colour is MEAN_COLOR/MODE_COLOR (matches the in-chart marks, so it
+    // reads clearly against the bars); the label text stays in the deck's normal dark colour,
+    // since a colour bright enough to clear the bars reads poorly as small text on this white strip.
+    s+='<line x1="'+pL+'" y1="'+(pT+6)+'" x2="'+(pL+18)+'" y2="'+(pT+6)+'" stroke="'+MEAN_COLOR+'" stroke-width="3" stroke-dasharray="4,3"/>';
+    s+='<text x="'+(pL+23)+'" y="'+(pT+9)+'" font-size="9.5" fill="'+LEGEND_TEXT+'" font-weight="700">Mean '+mean.toFixed(1)+'</text>';
+    s+='<rect x="'+(pL+90)+'" y="'+pT+'" width="12" height="12" fill="'+MODE_COLOR+'" stroke="none"/>';
+    s+='<text x="'+(pL+107)+'" y="'+(pT+9)+'" font-size="9.5" fill="'+LEGEND_TEXT+'" font-weight="700">Mode</text>';
+
+    AGE_BANDS.forEach(function(band,i){
+      var cx=x(BAND_MID[i]);
+      var barH=yBase-y(counts[i]);
+      var isMode=(i===mI);
+      s+='<rect x="'+(cx-barW/2)+'" y="'+y(counts[i])+'" width="'+barW+'" height="'+barH+'" fill="'+p.remar+'" opacity="'+(isMode?1:0.85)+'" stroke="'+(isMode?MODE_COLOR:'none')+'" stroke-width="'+(isMode?3:0)+'"/>';
+      s+='<text x="'+cx+'" y="'+(yBase+13)+'" text-anchor="middle" font-size="8" fill="#6b7480" transform="rotate(28 '+cx+' '+(yBase+13)+')">'+band+'</text>';
+    });
+    var meanX=x(mean);
+    // Mean line: bright gold, drawn directly over the bars -- no halo. At stroke-width 2.4 it
+    // clears 3:1 against both the groom-blue and bride-mauve bar fills on its own (see the note
+    // above MEAN_COLOR/MODE_COLOR for the actual ratios).
+    s+='<line x1="'+meanX+'" y1="'+yTop+'" x2="'+meanX+'" y2="'+yBase+'" stroke="'+MEAN_COLOR+'" stroke-width="2.4" stroke-dasharray="5,3"/>';
+    s+='<line x1="'+pL+'" y1="'+yBase+'" x2="'+(DW-pR)+'" y2="'+yBase+'" stroke="#e4e0d8"/>';
+    s+='</svg>';
+    target.innerHTML=s;
+  }
+
+  document.getElementById('db-btn-groom').addEventListener('mouseenter',function(){draw('groom');});
+  document.getElementById('db-btn-bride').addEventListener('mouseenter',function(){draw('bride');});
+  document.getElementById('db-btn-groom').addEventListener('click',function(){draw('groom');});
+  document.getElementById('db-btn-bride').addEventListener('click',function(){draw('bride');});
+
+  draw('groom');
+})();
+</script>
+```
+
+## Data sources {.smaller}
+
+:::::::: columns
+::::: {.column width="40%"}
+::: {.box .slate-box}
+**Table M830169** · Median Age of Grooms and Brides by Marriage Order and Type of Marriage · SingStat TableBuilder [@singstat_m830169]
+:::
+
+- **One source.** Every series comes from a single SingStat export: no cross-table joins, no merge errors.
+- **Four dimensions natively.** Year, type, sex, and order, all set against one measure: median age.
+- **Reproducible.** Stable table ID, dated export, same form for any marker or auditor.
+
+::: small
+2003–2024, matching the original chart.
+Distribution panel draws on a second table, age-band counts for all marriages combined [@singstat_m830103].
+:::
+:::::
+
+:::: {.column width="60%"}
+Preview of the cleaned median-age table the dumbbell reads from:
+
+::: compact-table
+| year | groom_first | groom_remarry | bride_first | bride_remarry | groom_gap | bride_gap |
+|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
+| 2003 | 29.1        | 40.2          | 26.6        | 34.2          | 11.1      | 7.6       |
+| 2010 | 30.0        | 41.8          | 27.7        | 36.3          | 11.8      | 8.6       |
+| 2015 | 30.3        | 43.3          | 28.2        | 37.5          | 13.0      | 9.3       |
+| 2024 | 31.1        | 45.0          | 29.6        | 39.6          | 13.9      | 10.0      |
+
+: Four-row preview of the full 22-year table. `groom_gap`/`bride_gap` = re-marriage age minus first-marriage age.
+:::
+::::
+::::::::
+
+## From raw export to clean table {.smaller}
+
+The SingStat file is not a clean rectangle.
+Ten metadata rows precede the table, marriage type and sex are implied by row text and indentation, and year headers carry trailing whitespace.
+Five sequential stages resolve this.
+
+```{=html}
+<svg width="100%" height="150" viewBox="0 0 900 150" style="display:block;margin:0.4rem auto;">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#5f6b7a"></path>
+    </marker>
+  </defs>
+  ${""}
+  <rect x="10" y="55" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
+  <text x="90" y="74" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">1. Import</text>
+  <text x="90" y="90" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Read raw CSV</text>
+
+  <rect x="188" y="55" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
+  <text x="268" y="74" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">2. Baseline check</text>
+  <text x="268" y="90" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Record raw shape</text>
+
+  <rect x="366" y="55" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
+  <text x="446" y="74" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">3. Label</text>
+  <text x="446" y="90" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Tag type and gender</text>
+
+  <rect x="544" y="55" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
+  <text x="624" y="74" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">4. Reshape and filter</text>
+  <text x="624" y="90" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Pivot long, keep rows we need</text>
+
+  <rect x="722" y="55" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
+  <text x="802" y="74" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">5. Gap and schema</text>
+  <text x="802" y="90" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Compute gaps, validate, write</text>
+
+  <line x1="170" y1="78" x2="186" y2="78" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow)"></line>
+  <line x1="348" y1="78" x2="364" y2="78" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow)"></line>
+  <line x1="526" y1="78" x2="542" y2="78" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow)"></line>
+  <line x1="704" y1="78" x2="720" y2="78" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow)"></line>
+</svg>
+```
+
+| Stage | Action |
+|----------------------------------|--------------------------------------|
+| **1. Import** | Read the CSV, skip ten metadata rows, keep the year headers as a separate vector |
+| **2. Baseline check** | Record raw dimensions, missing cells, and year range as a reference to reconcile against |
+| **3. Label** | Tag each row from its text using the `" - "` delimiter, carry type and sex onto indented rows |
+| **4. Reshape and filter** | Pivot long, then filter to Total Marriages, first and re-marriage, year ≥ 2003 |
+| **5. Gap and schema** | Pivot wide, compute `groom_gap` and `bride_gap`, validate row count and plausibility |
+
+::: small
+Each stage reads the output of the one before and produces a new object, so any single step stays inspectable and re-runnable on its own.
+:::
+
+## The pipeline in code {#pipeline-code .smaller}
+
+The same five stages as the previous slide, now as five separate, foldable code chunks.
+
+**Stage 1 · Import**
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show the code"
+library(tidyverse) # <1>
+
+raw <- read_csv("data/raw/M830169_raw.csv", skip = 10, col_names = FALSE) # <2>
+years_header <- raw |> slice(1) |> select(-1) |> unlist() |> as.numeric() # <3>
+```
+
+1.  `tidyverse` bundles `readr`, `dplyr`, `tidyr`, and `stringr`, everything the rest of the pipeline calls on.
+2.  Skips the ten metadata rows above the actual table; `col_names = FALSE` keeps the raw layout so row 1 can still be read as data rather than headers.
+3.  Row 1 holds the year labels (2003…2025). Pulled out now and kept as a separate vector, since Stage 3 reattaches it explicitly as column names.
+
+**Stage 2 · Baseline check**
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show the code"
+baseline <- list(
+  n_rows    = nrow(raw),      # <1>
+  n_missing = sum(is.na(raw)) # <2>
+)
+```
+
+1.  Row count taken straight off the untouched import, before any filtering or reshaping.
+2.  Missing-cell count recorded here too, so Stage 5's checks have a known-good reference to compare against.
+
+**Stage 3 · Label**
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show the code"
+marriage <- raw |> slice(-1) |>
+  mutate(label = str_trim(X1),                                          # <1>
+         is_header = str_detect(label, " - "),                          # <2>
+         type   = if_else(is_header, str_split_i(label, " - ", 1), NA), # <3>
+         gender = if_else(is_header, str_split_i(label, " - ", 2), NA)) |>
+  fill(type, gender, .direction = "down") |>                            # <4>
+  mutate(order = if_else(is_header, "All", label)) |>                   # <5>
+  set_names(c("X1","label","is_header","type","gender","order", years_header)) # <6>
+```
+
+1.  Drops the header row consumed in Stage 1, then trims stray whitespace from every remaining row label.
+2.  Header rows read like `"Total Marriages - Grooms"`; the `" - "` delimiter is what tells a header row apart from an indented data row.
+3.  `str_split_i` reads the marriage type and gender straight out of that header label.
+4.  Indented data rows (e.g. `"First Marriages"`) carry no type/gender of their own, so `fill()` carries the last header's values down onto them.
+5.  Header rows get `order = "All"`; every other row keeps its own label (`"First Marriages"`, `"Remarriages"`, …) as the marriage order.
+6.  Reattaches the `years_header` vector from Stage 1 as the real column names, replacing the placeholder `V2, V3, …` names.
+
+**Stage 4 · Reshape and filter**
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show the code"
+marriage <- marriage |>
+  pivot_longer(-c(X1,label,is_header,type,gender,order),
+               names_to = "year", values_to = "age") |>                 # <1>
+  filter(type == "Total Marriages",                                     # <2>
+         order %in% c("First Marriages","Remarriages"),                 # <3>
+         as.integer(year) >= 2003) |>                                   # <4>
+  pivot_wider(names_from = c(gender, order), values_from = age)         # <5>
+```
+
+1.  One column per year becomes one row per year; every later step, and every chart on this slide, assumes long format.
+2.  Keeps only the combined-order total, dropping the by-citizenship and by-ethnicity breakdowns the raw file also carries.
+3.  Restricts marriage order to first marriages and remarriages, the two series the dumbbell chart needs.
+4.  Matches the 2003–2024 window used throughout the deck, so it lines up with the year the original chart starts.
+5.  Pivots back to wide, keyed this time on gender and order, so `groom_first`, `groom_remarry`, `bride_first`, and `bride_remarry` each become their own column.
+
+**Stage 5 · Gap and schema**
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show the code"
+marriage <- marriage |>
+  mutate(groom_gap = groom_remarry - groom_first,                       # <1>
+         bride_gap = bride_remarry - bride_first)
+
+stopifnot(nrow(marriage) == 22,                                         # <2>
+          all(marriage$groom_gap > 0, marriage$bride_gap > 0),          # <3>
+          n_distinct(marriage$year) == nrow(marriage))                  # <4>
+
+write_csv(marriage, "data/clean/M830169_cleaned.csv")                   # <5>
+```
+
+1.  The gap columns are computed once, here, so every chart and analysis slide downstream reads the same number instead of recomputing it inline.
+2.  Confirms the row count matches the expected 22 years (2003–2024) before the file is trusted downstream.
+3.  Re-marriage age should always exceed first-marriage age; this fails loudly if a join or filter went wrong upstream.
+4.  Guards against a duplicated year slipping through the pivot undetected.
+5.  Writes the cleaned, validated table that every other slide in this deck reads from.
+
+## A1: Brides' First-Marriage Age Rises Twice as Fast {.smaller}
+
+A linear regression of first-marriage age on year, fitted separately per gender.
+
+:::::: columns
+:::: {.column width="46%"}
+::: box
+**Brides rise about twice as fast as grooms, and both slopes are significant.**
+
+Brides: **0.14 years/year** (95% CI 0.13–0.14; R² 0.98; *p* \< .001)
+
+Grooms: **0.07 years/year** (95% CI 0.06–0.08; R² 0.87; *p* \< .001)
+:::
+
+Over 2003 to 2024, that is a gain of about **3.0 years** for brides against **2.0 years** for grooms.
+A direct test of the two slopes (Welch-style *t*-test on the difference) confirms the gap in *rates* itself is significant: *t*(40) = 9.89, *p* \< .001.
+::::
+
+::: {.column width="54%"}
+```{=html}
+<div id="a1-chart-wrap" style="width:100%;"></div>
+<script>
+(function(){
+  var DATA=MARRIAGE_DATA; // shared source, defined once in the deck's <head>; this chart only reads .y/.gf/.bf
+  var W=480,H=180,mL=34,mR=14,mT=26,mB=26,iw=W-mL-mR,ih=H-mT-mB;
+  var y0=DATA[0].y,y1=DATA[DATA.length-1].y;
+  var vals=DATA.map(function(d){return d.gf;}).concat(DATA.map(function(d){return d.bf;}));
+  var vMin=Math.min.apply(null,vals)-1.0, vMax=Math.max.apply(null,vals)+1.0;
+  function xs(y){return mL+(y-y0)/(y1-y0)*iw;}
+  function ysc(v){return mT+ih-(v-vMin)/(vMax-vMin)*ih;}
+  function pts(key){return DATA.map(function(d){return xs(d.y)+','+ysc(d[key]);}).join(' ');}
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Median first-marriage age by year, grooms and brides. Interactive: hover a point for its exact value.">';
+  s+='<text x="10" y="16" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="600">Median first-marriage age, 2003 to 2024 (hover a point)</text>';
+  s+='<polyline points="'+pts('gf')+'" fill="none" stroke="#2f4b7c" stroke-width="2.4"/>';
+  s+='<polyline points="'+pts('bf')+'" fill="none" stroke="#b5651d" stroke-width="2.4"/>';
+  DATA.forEach(function(d){
+    ['gf','bf'].forEach(function(key){
+      var col=(key==='gf'?'#2f4b7c':'#b5651d');
+      s+='<circle class="a1-pt" data-y="'+d.y+'" data-gf="'+d.gf+'" data-bf="'+d.bf+'" cx="'+xs(d.y)+'" cy="'+ysc(d[key])+'" r="7" fill="'+col+'" opacity="0" style="cursor:pointer;"/>';
+      s+='<circle cx="'+xs(d.y)+'" cy="'+ysc(d[key])+'" r="2.6" fill="'+col+'"/>';
+    });
+  });
+  s+='<text x="'+(W-14)+'" y="'+(ysc(DATA[DATA.length-1].gf)-8)+'" text-anchor="end" font-size="10" fill="#2f4b7c" font-family="Inter, sans-serif" font-weight="600">Grooms</text>';
+  s+='<text x="'+(W-14)+'" y="'+(ysc(DATA[DATA.length-1].bf)+16)+'" text-anchor="end" font-size="10" fill="#b5651d" font-family="Inter, sans-serif" font-weight="600">Brides</text>';
+  s+='<text x="'+mL+'" y="'+(H-6)+'" font-size="9" fill="#5f6b7a" font-family="Inter, sans-serif">'+y0+'</text>';
+  s+='<text x="'+(W-mR)+'" y="'+(H-6)+'" text-anchor="end" font-size="9" fill="#5f6b7a" font-family="Inter, sans-serif">'+y1+'</text>';
+  s+='</svg>';
+  document.getElementById('a1-chart-wrap').innerHTML=s;
+  document.querySelectorAll('#a1-chart-wrap .a1-pt').forEach(function(c){
+    c.addEventListener('mousemove',function(e){
+      showTip(e, '<b>'+c.getAttribute('data-y')+'</b><br>Grooms: '+c.getAttribute('data-gf')+'<br>Brides: '+c.getAttribute('data-bf'));
+    });
+    c.addEventListener('mouseleave', hideTip);
+  });
+})();
+</script>
+```
+
+The original chart hides this.
+Four overlapping lines lead the eye to read one shared slope, when there are really two different ones.
+:::
+::::::
+
+::: small
+Method: `lm(median_age ~ year)` per gender, 22 annual observations each.
+Significance of both slopes and of their difference confirmed by two-sided *t*-tests; 95% CIs from the OLS standard errors.
+:::
+
+## A2: First Marriage and Re-marriage Are Drifting Further Apart {.smaller}
+
+A linear regression of each derived gap column on year.
+This gap is the connector label on every dumbbell, so A2 measures exactly what the reader sees.
+
+:::::: columns
+:::: {.column width="46%"}
+::: box
+**Both gaps widen, and both trends are significant.** Groom gap grows from **11.1 to 13.9 years** (slope 0.14 years/year, 95% CI 0.11–0.17; R² 0.80; *p* \< .001).
+Bride gap grows from **7.6 to 10.0 years** (slope 0.10 years/year, 95% CI 0.08–0.12; R² 0.83; *p* \< .001).
+:::
+
+Re-marriage age is pulling away from first-marriage age for both genders.
+The original chart never makes this point, because it never puts a number on the gap.
+::::
+
+::: {.column width="54%"}
+```{=html}
+<div id="a2-chart-wrap" style="width:100%;"></div>
+<script>
+(function(){
+  // Gap columns derived from the shared source rather than re-typed, so they can't drift from the dumbbell chart.
+  var DATA=MARRIAGE_DATA.map(function(d){
+    return {y:d.y, gg:+(d.gr-d.gf).toFixed(1), bg:+(d.br-d.bf).toFixed(1)};
+  });
+  var W=480,H=180,mL=34,mR=14,mT=26,mB=26,iw=W-mL-mR,ih=H-mT-mB;
+  var y0=DATA[0].y,y1=DATA[DATA.length-1].y;
+  var vals=DATA.map(function(d){return d.gg;}).concat(DATA.map(function(d){return d.bg;}));
+  var vMin=Math.min.apply(null,vals)-1.0, vMax=Math.max.apply(null,vals)+1.0;
+  function xs(y){return mL+(y-y0)/(y1-y0)*iw;}
+  function ysc(v){return mT+ih-(v-vMin)/(vMax-vMin)*ih;}
+  function pts(key){return DATA.map(function(d){return xs(d.y)+','+ysc(d[key]);}).join(' ');}
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Groom and bride gap between first marriage and re-marriage age, by year. Interactive: hover a point for its exact value.">';
+  s+='<text x="10" y="16" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="600">Gap: re-marriage age minus first-marriage age (hover a point)</text>';
+  s+='<polyline points="'+pts('gg')+'" fill="none" stroke="#2f4b7c" stroke-width="2.4"/>';
+  s+='<polyline points="'+pts('bg')+'" fill="none" stroke="#b5651d" stroke-width="2.4"/>';
+  DATA.forEach(function(d){
+    ['gg','bg'].forEach(function(key){
+      var col=(key==='gg'?'#2f4b7c':'#b5651d');
+      s+='<circle class="a2-pt" data-y="'+d.y+'" data-gg="'+d.gg+'" data-bg="'+d.bg+'" cx="'+xs(d.y)+'" cy="'+ysc(d[key])+'" r="7" fill="'+col+'" opacity="0" style="cursor:pointer;"/>';
+      s+='<circle cx="'+xs(d.y)+'" cy="'+ysc(d[key])+'" r="2.6" fill="'+col+'"/>';
+    });
+  });
+  s+='<text x="'+(W-14)+'" y="'+(ysc(DATA[DATA.length-1].gg)-8)+'" text-anchor="end" font-size="10" fill="#2f4b7c" font-family="Inter, sans-serif" font-weight="600">Groom gap</text>';
+  s+='<text x="'+(W-14)+'" y="'+(ysc(DATA[DATA.length-1].bg)+16)+'" text-anchor="end" font-size="10" fill="#b5651d" font-family="Inter, sans-serif" font-weight="600">Bride gap</text>';
+  s+='<text x="'+mL+'" y="'+(H-6)+'" font-size="9" fill="#5f6b7a" font-family="Inter, sans-serif">'+y0+'</text>';
+  s+='<text x="'+(W-mR)+'" y="'+(H-6)+'" text-anchor="end" font-size="9" fill="#5f6b7a" font-family="Inter, sans-serif">'+y1+'</text>';
+  s+='</svg>';
+  document.getElementById('a2-chart-wrap').innerHTML=s;
+  document.querySelectorAll('#a2-chart-wrap .a2-pt').forEach(function(c){
+    c.addEventListener('mousemove',function(e){
+      showTip(e, '<b>'+c.getAttribute('data-y')+'</b><br>Groom gap: '+c.getAttribute('data-gg')+'y<br>Bride gap: '+c.getAttribute('data-bg')+'y');
+    });
+    c.addEventListener('mouseleave', hideTip);
+  });
+})();
+</script>
+```
+:::
+::::::
+
+::: small
+Method: `lm(gap ~ year)` per gender, 22 annual observations each; 95% CIs from OLS standard errors.
+The lower R² here than in A1 is expected: re-marriages are far fewer, so their annual medians react more to short-term shocks.
+Both trends still clear *p* \< .001.
+:::
+
+## A3: Grooms and Brides Are Closing Their Age Gap {.smaller}
+
+The year-by-year difference between groom and bride first-marriage age, plus a Pearson correlation between the two series.
+
+:::::: columns
+:::: {.column width="46%"}
+::: {.box .slate-box}
+Correlation **r = 0.95** (95% CI 0.89–0.98; *p* \< .001, *n* = 22)
+
+Gender gap narrows from **2.5 to 1.5 years** (mean 2.1)
+:::
+
+The two series move together closely, yet the distance between them shrinks.
+Both genders rise, so they stay correlated.
+Brides rise faster, so the age difference slowly closes.
+::::
+
+::: {.column width="54%"}
+```{=html}
+<div id="a3-chart-wrap" style="width:100%;"></div>
+<script>
+(function(){
+  var DATA=MARRIAGE_DATA; // shared source, defined once in the deck's <head>; this chart only reads .y/.gf/.bf
+  var W=480,H=200,mL=34,mR=16,mT=26,mB=30,iw=W-mL-mR,ih=H-mT-mB;
+  var gVals=DATA.map(function(d){return d.gf;}), bVals=DATA.map(function(d){return d.bf;});
+  var gMin=Math.min.apply(null,gVals)-0.3, gMax=Math.max.apply(null,gVals)+0.3;
+  var bMin=Math.min.apply(null,bVals)-0.3, bMax=Math.max.apply(null,bVals)+0.3;
+  function xs(v){return mL+(v-gMin)/(gMax-gMin)*iw;}
+  function ysc(v){return mT+ih-(v-bMin)/(bMax-bMin)*ih;}
+  // least-squares fit of bride age on groom age, drawn as a visual aid for the r = 0.95 correlation
+  var n=DATA.length, sx=0,sy=0,sxy=0,sxx=0;
+  DATA.forEach(function(d){sx+=d.gf;sy+=d.bf;sxy+=d.gf*d.bf;sxx+=d.gf*d.gf;});
+  var mSlope=(n*sxy-sx*sy)/(n*sxx-sx*sx), mInt=(sy-mSlope*sx)/n;
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Groom median age plotted against bride median age, by year. Interactive: hover a point for its year.">';
+  s+='<text x="10" y="16" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="600">Groom vs bride first-marriage age (hover a point)</text>';
+  s+='<line x1="'+mL+'" y1="'+(H-mB)+'" x2="'+(W-mR)+'" y2="'+(H-mB)+'" stroke="#e4ddd2"/>';
+  s+='<line x1="'+mL+'" y1="'+mT+'" x2="'+mL+'" y2="'+(H-mB)+'" stroke="#e4ddd2"/>';
+  s+='<line x1="'+xs(gMin)+'" y1="'+ysc(mSlope*gMin+mInt)+'" x2="'+xs(gMax)+'" y2="'+ysc(mSlope*gMax+mInt)+'" stroke="#c8791f" stroke-width="1.6" stroke-dasharray="4,3"/>';
+  DATA.forEach(function(d){
+    s+='<circle class="a3-pt" data-y="'+d.y+'" data-gf="'+d.gf+'" data-bf="'+d.bf+'" cx="'+xs(d.gf)+'" cy="'+ysc(d.bf)+'" r="7" fill="#3d5a80" opacity="0" style="cursor:pointer;"/>';
+    s+='<circle cx="'+xs(d.gf)+'" cy="'+ysc(d.bf)+'" r="3.6" fill="#3d5a80"/>';
+  });
+  s+='<text x="'+(mL+iw/2)+'" y="'+(H-6)+'" text-anchor="middle" font-size="9" fill="#5f6b7a" font-family="Inter, sans-serif">Groom median age, low to high &rarr;</text>';
+  s+='<text x="12" y="'+(mT+ih/2)+'" text-anchor="middle" font-size="9" fill="#5f6b7a" font-family="Inter, sans-serif" transform="rotate(-90 12 '+(mT+ih/2)+')">Bride median age</text>';
+  s+='</svg>';
+  document.getElementById('a3-chart-wrap').innerHTML=s;
+  document.querySelectorAll('#a3-chart-wrap .a3-pt').forEach(function(c){
+    c.addEventListener('mousemove',function(e){
+      showTip(e, '<b>'+c.getAttribute('data-y')+'</b><br>Groom: '+c.getAttribute('data-gf')+'<br>Bride: '+c.getAttribute('data-bf'));
+    });
+    c.addEventListener('mouseleave', hideTip);
+  });
+})();
+</script>
+```
+:::
+::::::
+
+## Findings and Limitations {.smaller}
+
+::: box
+**What the numbers say.** Singaporeans marry later, and the pace depends on both gender and marriage order.
+Brides drive the first-marriage rise, climbing almost twice as fast as grooms (A1).
+Re-marriage age is pulling further away from first-marriage age for both genders, not holding at a fixed distance (A2).
+And even though grooms and brides move together closely (*r* = 0.95), the gap between them keeps narrowing, year on year (A3).
+None of that is visible in a single-panel line chart with four labelled points; it only shows up once the data is re-plotted around the gap itself.
+:::
+
+```{=html}
+<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:2px 0 12px;">
+  <div style="flex:1 1 170px;background:#eef1f7;border-radius:8px;padding:8px 12px;text-align:center;">
+    <div style="font-size:11px;color:#5f6b7a;font-family:Inter,sans-serif;">A1 &middot; Age rise per year</div>
+    <div style="font-size:16px;font-weight:700;color:#2f4b7c;font-family:Inter,sans-serif;">Brides 0.14 yr, grooms 0.07 yr</div>
+  </div>
+  <div style="flex:1 1 170px;background:#eef1f7;border-radius:8px;padding:8px 12px;text-align:center;">
+    <div style="font-size:11px;color:#5f6b7a;font-family:Inter,sans-serif;">A2 &middot; Gap widening, 2003&ndash;2024</div>
+    <div style="font-size:16px;font-weight:700;color:#2f4b7c;font-family:Inter,sans-serif;">Grooms +2.8 yr, brides +2.4 yr</div>
+  </div>
+  <div style="flex:1 1 170px;background:#eef1f7;border-radius:8px;padding:8px 12px;text-align:center;">
+    <div style="font-size:11px;color:#5f6b7a;font-family:Inter,sans-serif;">A3 &middot; Gender gap, 2003&ndash;2024</div>
+    <div style="font-size:16px;font-weight:700;color:#2f4b7c;font-family:Inter,sans-serif;">2.5 yr &rarr; 1.5 yr</div>
+  </div>
+</div>
+```
+
+::: {.box .slate-box}
+**Limitations, kept in view.** Three things temper the headline.
+*Covid:* groom re-marriage age falls from 44.2 in 2019 to 42.4 in 2021, then recovers to 44.6 in 2022.
+Re-marriages are few enough that their annual medians swing with registration disruption, so the 2020–2021 dip is annotated on the chart rather than smoothed away.
+*Distribution panel scope:* it draws on age-band counts for all marriage orders combined, not split by first marriage versus re-marriage, so it describes that year's overall population rather than the exact series being plotted.
+*Correlation, not causation:* A3's *r* = 0.95 says grooms' and brides' ages move together, not that one drives the other.
+Both plausibly respond to the same underlying trend toward later marriage generally.
+:::
+
+## Conclusion {.smaller}
+
+- We took one thread from a Mothership.SG report and rebuilt it around the number it left implicit: the **gap** between first and re-marriage age, turning an implicit read into the explicit subject of the chart.
+- The interactive dumbbell fixes all six weaknesses of the original: it shows every year, labels every value, prints every gap, and replaces a four-line tangle with a clean gender toggle plus a linked distribution view.
+- Three analyses turn the visual into defensible, statistically significant claims (all *p* \< .001): brides drive the first-marriage rise (A1), both gaps are widening (A2), and the genders move together while their gap closes (A3).
+- Zooming out, the story still lines up with Singapore's broader "marrying later" narrative, but it identifies *who* is doing more of the delaying, which the original never could: brides, not grooms, and by a growing margin.
+
+```{=html}
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px 14px;max-width:820px;margin:10px auto 4px;font-family:Inter,sans-serif;font-size:11.5px;color:#3a4356;">
+  <div>&#10003; <b>W1</b> Lines hard to tell apart</div>
+  <div>&#10003; <b>W2</b> Gender comparison buried</div>
+  <div>&#10003; <b>W3</b> Sparse points, no lookup</div>
+  <div>&#10003; <b>W4</b> Only median, no spread</div>
+  <div>&#10003; <b>W5</b> Gap never shown</div>
+  <div>&#10003; <b>W6</b> Colour-blind unsafe pairing</div>
+</div>
+```
+
+::: box
+Singaporeans are not rejecting marriage.
+They are delaying it, and who delays the most is changing.
+:::
+
+## Work distribution {.smaller}
+
+| Member | Responsibilities |
+|-----------------------|------------------------------------------------|
+| Than Shu En | Interactive dumbbell chart, toggle, and value labels |
+| Natalie Peh | Data sourcing and validation; check finalised visualization alignment with proposal; story flow |
+| Lee Jia Shin | R cleaning and transformation pipeline; reproducibility documentation |
+| Pang Shi Qi | Critical analysis and proposed improvements |
+| Olivia Lam Xuan En | Data analysis, statistics, and final document assembly |
+
+::: small
+All members review each other's sections and contribute to the presentation.
+:::
+
+## References {.smaller}
+
+::: {#refs}
+:::
+
+::: small
+Thank you.
+Questions welcome.
+:::
