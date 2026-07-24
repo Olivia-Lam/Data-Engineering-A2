@@ -138,17 +138,22 @@ The background histogram draws on SingStat's age-band counts, published for all 
 
 ```{=html}
 <div class="dumbbell-wrap" style="max-width:1040px;margin:0 auto;">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 6px 4px;flex-wrap:wrap;gap:6px;">
-    <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:20px;color:#23304a;">
-      Median age: first marriage &rarr; re-marriage,
-      <span id="db-gender" style="color:#2f4b7c;">Grooms</span>, 2003&ndash;2024
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:2px 6px 2px;flex-wrap:wrap;gap:6px;">
+    <div>
+      <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:20px;color:#23304a;">
+        Marriage age by year,
+        <span id="db-gender" style="color:#2f4b7c;">Grooms</span>, 2003&ndash;2024
+      </div>
+      <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:500;color:#3a4356;margin-top:2px;">
+        <b>Dumbbell:</b> median first marriage &rarr; re-marriage age &nbsp;&bull;&nbsp; <b>Bars:</b> age distribution (mean + mode), across all marriages
+      </div>
     </div>
     <div class="dumbbell-toggle" role="group" aria-label="Choose gender, hover to switch">
       <button id="db-btn-groom" class="active-groom">Grooms</button>
       <button id="db-btn-bride">Brides</button>
     </div>
   </div>
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:0 8px 2px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:2px 8px 2px;">
     <div id="db-legend" style="display:flex;gap:22px;font-size:13px;color:#5f6b7a;flex-wrap:wrap;"></div>
     <div style="display:flex;gap:16px;">
       <label class="db-checkbox">
@@ -160,10 +165,10 @@ The background histogram draws on SingStat's age-band counts, published for all 
     </div>
   </div>
   <div id="db-chart" style="width:100%;height:500px;overflow-y:auto;overflow-x:hidden;border-top:1px solid #efe9dd;"></div>
-  <div class="small" style="padding:4px 8px 4px;font-size:12px;color:#8a8577;">
-    Source: Singapore Department of Statistics, Tables M830169 (median ages) and M830170 (age-band counts).
-    Number on each bar is the gap in years. Bars behind each dumbbell are that year's age-band histogram; hover a row for its mean and mode.
-    Covid-affected marriage years, 2020&ndash;2021, fall inside the range shown. Age-band counts for 2024 are not yet published by SingStat, so that row shows the dumbbell only.
+  <div class="small" style="padding:4px 8px 4px;font-size:11.5px;color:#8a8577;line-height:1.55;">
+    <span style="color:#2f4b7c;font-weight:700;">Source:</span> Singapore DOS, Tables M830169 (median ages), M830170 (age-band counts).
+    &nbsp;<span style="font-weight:900;color:#5f6b7a;">&middot;</span>&nbsp;
+    <span style="color:#2f4b7c;font-weight:700;">Marriages during Covid:</span> 2020&ndash;2021 is highlighted in <span style="color:#b5651d;font-weight:700;">Orange</span>.
   </div>
 </div>
 <script>
@@ -248,9 +253,11 @@ The background histogram draws on SingStat's age-band counts, published for all 
       row.append('rect').attr('x', 0).attr('y', 0).attr('width', W).attr('height', rowH)
         .attr('fill', 'transparent')
         .on('mousemove', function(event){
-          if(!counts){ showTip(event, '<b>'+d.y+'</b><br>Age-band distribution not yet published'); return; }
+          // "all marriages" is folded into the header line itself, right next to the numbers
+          // it qualifies, instead of a separate disclaimer sentence nobody reads twice
+          if(!counts){ showTip(event, '<b>'+d.y+'</b><br>Age-band counts not yet published by SingStat &mdash; dumbbell only'); return; }
           var mean = weightedMean(counts), modeI = modeIndex(counts);
-          showTip(event, '<b>'+d.y+'</b><br>Mean: '+mean.toFixed(1)+' &middot; Mode: '+AGE_BANDS[modeI]);
+          showTip(event, '<b>'+d.y+', all marriages</b><br>Mean age '+mean.toFixed(1)+' &middot; Mode band '+AGE_BANDS[modeI]);
         })
         .on('mouseleave', hideTip);
 
@@ -317,7 +324,8 @@ The background histogram draws on SingStat's age-band counts, published for all 
     d3.select('#db-legend').html(
       '<span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+p.first+';margin-right:6px;"></span>First marriage</span>'+
       '<span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+p.remar+';margin-right:6px;"></span>Re-marriage</span>'+
-      '<span><span style="display:inline-block;width:12px;height:8px;background:'+p.barHi+';margin-right:6px;"></span>Age-band distribution</span>'
+      '<span><span style="display:inline-block;width:16px;height:2px;background:'+p.line+';margin-right:6px;vertical-align:middle;"></span>Connector = gap in years</span>'+
+      '<span><span style="display:inline-block;width:12px;height:8px;background:'+p.barHi+';margin-right:6px;"></span>Age-band distribution (all marriages)</span>'
     );
     var gEl = document.getElementById('db-gender');
     gEl.textContent = p.label; gEl.style.color = p.title;
@@ -345,37 +353,43 @@ The background histogram draws on SingStat's age-band counts, published for all 
 
 ## Data sources {.smaller}
 
-:::::::: columns
-::::: {.column width="40%"}
-::: {.box .slate-box}
-**Table M830169** · Median Age of Grooms and Brides by Marriage Order and Type of Marriage · SingStat TableBuilder [@singstat_m830169]
+::::::::: columns
+::::: {.column width="50%"}
+::: {.box .slate-box .small-box}
+**M830169** · Median Age of Grooms and Brides by Marriage Order and Type [@singstat_m830169]
 :::
 
-- **One source.** Every series comes from a single SingStat export: no cross-table joins, no merge errors.
-- **Four dimensions natively.** Year, type, sex, and order, all set against one measure: median age.
-- **Reproducible.** Stable table ID, dated export, same form for any marker or auditor.
+::: compact-table
+| year | groom_first | groom_remarry | bride_first | bride_remarry |
+|------|-------------|---------------|-------------|---------------|
+| 2003 | 29.1        | 40.2          | 26.6        | 34.2          |
+| 2010 | 30.0        | 41.8          | 27.7        | 36.3          |
+| 2024 | 31.1        | 45.0          | 29.6        | 39.6          |
 
-::: small
-2003–2024, matching the original chart.
-Background histogram draws on a second table, age-band counts for all marriages combined [@singstat_m830170].
+: Dumbbell input. Gap columns (`groom_gap`/`bride_gap`) are computed from these afterward.
 :::
 :::::
 
-:::: {.column width="60%"}
-Preview of the cleaned median-age table the dumbbell reads from:
+::::: {.column width="50%"}
+::: {.box .slate-box .small-box}
+**M830170** · Marriages by Age Group and Previous Marital Status [@singstat_m830170]
+:::
 
 ::: compact-table
-| year | groom_first | groom_remarry | bride_first | bride_remarry | groom_gap | bride_gap |
-|------|-------------|---------------|-------------|---------------|-----------|-----------|
-| 2003 | 29.1        | 40.2          | 26.6        | 34.2          | 11.1      | 7.6       |
-| 2010 | 30.0        | 41.8          | 27.7        | 36.3          | 11.8      | 8.6       |
-| 2015 | 30.3        | 43.3          | 28.2        | 37.5          | 13.0      | 9.3       |
-| 2024 | 31.1        | 45.0          | 29.6        | 39.6          | 13.9      | 10.0      |
+| year | groom_25to29 | bride_25to29 | groom_30to34 | bride_30to34 |
+|------|--------------|--------------|--------------|--------------|
+| 2003 | 8923         | 9798         | 5613         | 3539         |
+| 2010 | 8297         | 10748        | 6686         | 5185         |
+| 2015 | 9698         | 12763        | 8524         | 6713         |
 
-: Four-row preview of the full 22-year table. `groom_gap`/`bride_gap` = re-marriage age minus first-marriage age.
+: Background histogram input, 2 of 10 age bands shown. Full table is year × gender × band.
 :::
-::::
-::::::::
+:::::
+:::::::::
+
+- **Two tables, one role each.** M830169 drives the dumbbell (median ages, by gender); M830170 drives the background histogram (age-band counts, not split by marriage order).
+- **Same source, no external joins.** Both from SingStat TableBuilder, combined by year and gender, not merged row-for-row.
+- **Reproducible.** Stable table IDs, dated exports, 2003–2024 for both.
 
 ## From raw export to clean table {.smaller}
 
@@ -383,50 +397,107 @@ The SingStat file is not a clean rectangle.
 Ten metadata rows precede the table, marriage type and sex are implied by row text and indentation, and year headers carry trailing whitespace.
 Five sequential stages resolve this.
 
+::: small
+**M830169 pipeline** · produces the dumbbell input
+:::
+
 ```{=html}
-<svg width="100%" height="150" viewBox="0 0 900 150" style="display:block;margin:0.4rem auto;">
+<svg width="100%" height="82" viewBox="0 0 900 82" style="display:block;margin:0.1rem auto;">
   <defs>
-    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+    <marker id="arrow1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
       <path d="M0,0 L8,4 L0,8 z" fill="#5f6b7a"></path>
     </marker>
   </defs>
-  ${""}
-  <rect x="10" y="55" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
-  <text x="90" y="74" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">1. Import</text>
-  <text x="90" y="90" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Read raw CSV</text>
+  <rect x="10" y="8" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
+  <text x="90" y="27" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">1. Import</text>
+  <text x="90" y="43" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Read raw CSV</text>
 
-  <rect x="188" y="55" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
-  <text x="268" y="74" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">2. Baseline check</text>
-  <text x="268" y="90" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Record raw shape</text>
+  <rect x="188" y="8" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
+  <text x="268" y="27" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">2. Baseline check</text>
+  <text x="268" y="43" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Record raw shape</text>
 
-  <rect x="366" y="55" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
-  <text x="446" y="74" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">3. Label</text>
-  <text x="446" y="90" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Tag type and gender</text>
+  <rect x="366" y="8" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
+  <text x="446" y="27" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">3. Label</text>
+  <text x="446" y="43" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Tag type and gender</text>
 
-  <rect x="544" y="55" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
-  <text x="624" y="74" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">4. Reshape and filter</text>
-  <text x="624" y="90" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Pivot long, keep rows we need</text>
+  <rect x="544" y="8" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
+  <text x="624" y="27" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">4. Reshape and filter</text>
+  <text x="624" y="43" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Pivot long, keep rows we need</text>
 
-  <rect x="722" y="55" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
-  <text x="802" y="74" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">5. Gap and schema</text>
-  <text x="802" y="90" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Compute gaps, validate, write</text>
+  <rect x="722" y="8" width="160" height="46" rx="8" fill="#fff" stroke="#2f4b7c" stroke-width="1.4"></rect>
+  <text x="802" y="27" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">5. Gap and schema</text>
+  <text x="802" y="43" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Compute gaps, validate, write</text>
 
-  <line x1="170" y1="78" x2="186" y2="78" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow)"></line>
-  <line x1="348" y1="78" x2="364" y2="78" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow)"></line>
-  <line x1="526" y1="78" x2="542" y2="78" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow)"></line>
-  <line x1="704" y1="78" x2="720" y2="78" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow)"></line>
+  <line x1="170" y1="31" x2="186" y2="31" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow1)"></line>
+  <line x1="348" y1="31" x2="364" y2="31" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow1)"></line>
+  <line x1="526" y1="31" x2="542" y2="31" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow1)"></line>
+  <line x1="704" y1="31" x2="720" y2="31" stroke="#5f6b7a" stroke-width="1.4" marker-end="url(#arrow1)"></line>
 </svg>
 ```
 
-::: fit-col
-| Stage | Action |
-|----|----|
-| **1. Import** | Read the CSV, skip ten metadata rows, keep the year headers as a separate vector |
-| **2. Baseline check** | Record raw dimensions, missing cells, and year range as a reference to reconcile against |
-| **3. Label** | Tag each row from its text using the `" - "` delimiter, carry type and sex onto indented rows |
-| **4. Reshape and filter** | Pivot long, then filter to Total Marriages, first and re-marriage, year ≥ 2003 |
-| **5. Gap and schema** | Pivot wide, compute `groom_gap` and `bride_gap`, validate row count and plausibility |
+::: small
+**M830170 pipeline** · same pattern, applied more lightly · produces the background histogram input
 :::
+
+```{=html}
+<svg width="100%" height="82" viewBox="0 0 900 82" style="display:block;margin:0.1rem auto;">
+  <defs>
+    <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#a8456b"></path>
+    </marker>
+  </defs>
+  <rect x="10" y="8" width="160" height="46" rx="8" fill="#fff" stroke="#a8456b" stroke-width="1.4"></rect>
+  <text x="90" y="27" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">1. Import</text>
+  <text x="90" y="43" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Read raw CSV</text>
+
+  <rect x="188" y="8" width="160" height="46" rx="8" fill="#fff" stroke="#a8456b" stroke-width="1.4"></rect>
+  <text x="268" y="27" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">2. Label</text>
+  <text x="268" y="43" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Tag gender from header</text>
+
+  <rect x="366" y="8" width="160" height="46" rx="8" fill="#fff" stroke="#a8456b" stroke-width="1.4"></rect>
+  <text x="446" y="27" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">3. Reshape and filter</text>
+  <text x="446" y="43" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Pivot long, keep Total Marriages</text>
+
+  <rect x="544" y="8" width="160" height="46" rx="8" fill="#fff" stroke="#a8456b" stroke-width="1.4"></rect>
+  <text x="624" y="27" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">4. Pivot by band</text>
+  <text x="624" y="43" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Wide, keyed on age band</text>
+
+  <rect x="722" y="8" width="160" height="46" rx="8" fill="#fff" stroke="#a8456b" stroke-width="1.4"></rect>
+  <text x="802" y="27" text-anchor="middle" font-size="11" fill="#23304a" font-family="Inter, sans-serif" font-weight="700">5. Schema</text>
+  <text x="802" y="43" text-anchor="middle" font-size="9.5" fill="#5f6b7a" font-family="Inter, sans-serif">Validate lookup, write</text>
+
+  <line x1="170" y1="31" x2="186" y2="31" stroke="#a8456b" stroke-width="1.4" marker-end="url(#arrow2)"></line>
+  <line x1="348" y1="31" x2="364" y2="31" stroke="#a8456b" stroke-width="1.4" marker-end="url(#arrow2)"></line>
+  <line x1="526" y1="31" x2="542" y2="31" stroke="#a8456b" stroke-width="1.4" marker-end="url(#arrow2)"></line>
+  <line x1="704" y1="31" x2="720" y2="31" stroke="#a8456b" stroke-width="1.4" marker-end="url(#arrow2)"></line>
+</svg>
+```
+
+::::::: columns
+:::: {.column width="50%"}
+::: {.fit-col .compact-table}
+| Stage (M830169) | Action |
+|----|----|
+| **1. Import** | Skip 10 metadata rows, keep year headers as a vector |
+| **2. Baseline check** | Record raw shape, missing cells, year range |
+| **3. Label** | Tag type/gender from the `" - "` delimiter |
+| **4. Reshape, filter** | Pivot long, filter Total Marriages, year ≥ 2003 |
+| **5. Gap, schema** | Pivot wide, compute gaps, validate |
+:::
+::::
+
+:::: {.column width="50%"}
+::: {.fit-col .compact-table}
+| Stage (M830170)        | Action                              |
+|------------------------|-------------------------------------|
+| **1. Import**          | Skip metadata rows, read raw CSV    |
+| **2. Label**           | Tag gender from header text         |
+| **3. Reshape, filter** | Pivot long, keep Total Marriages    |
+| **4. Pivot by band**   | Pivot wide, keyed on age band       |
+| **5. Schema**          | Validate lookup, write cleaned file |
+:::
+::::
+:::::::
 
 ::: small
 Each stage reads the output of the one before and produces a new object, so any single step stays inspectable and re-runnable on its own.
@@ -538,6 +609,34 @@ write_csv(marriage, "data/clean/M830169_cleaned.csv")                   # <5>
 3.  Re-marriage age should always exceed first-marriage age; this fails loudly if a join or filter went wrong upstream.
 4.  Guards against a duplicated year slipping through the pivot undetected.
 5.  Writes the cleaned, validated table that every other slide in this deck reads from.
+
+**M830170 · condensed**
+
+No baseline-check or gap stage is needed here, so the same skip/label/reshape pattern collapses into one chain.
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-fold: true
+#| code-summary: "Show the code"
+bands <- read_csv("data/raw/M830170_raw.csv", skip = 10, col_names = FALSE) |> # <1>
+  slice(-1) |>
+  mutate(label = str_trim(X1),
+         gender = if_else(str_detect(label, " - "), str_split_i(label, " - ", 2), NA)) |>
+  fill(gender, .direction = "down") |>                                        # <2>
+  filter(str_detect(label, "Total Marriages")) |>                             # <3>
+  pivot_longer(-c(X1, label, gender), names_to = "age_band", values_to = "count") |>
+  pivot_wider(names_from = age_band, values_from = count)                     # <4>
+
+stopifnot(nrow(bands) == 44)                                                  # <5>
+write_csv(bands, "data/clean/M830170_cleaned.csv")
+```
+
+1.  Same import shape as M830169: skip the ten metadata rows, keep the age-band headers.
+2.  `fill()` carries each header row's gender down onto its indented age-band rows, the same trick Stage 3 used for type and gender.
+3.  Keeps only the combined-order Total Marriages row, since M830170 is never split by marriage order.
+4.  One pivot wide is enough; there's no gap to compute, so no second re-pivot like Stage 5's.
+5.  22 years × 2 genders = 44 rows expected; this is the lightweight equivalent of Stage 2's baseline check.
 
 ## A1: Brides' First-Marriage Age Rises Twice as Fast {.smaller}
 
