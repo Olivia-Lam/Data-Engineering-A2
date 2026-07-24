@@ -100,7 +100,7 @@ A non-specialist takes in the headline, that people marry later, within a few se
 
 ::: fit-col
 | \# | Weakness |
-|------------------------------------|------------------------------------|
+|----|----|
 | **W1** | The two closely spaced line pairs are hard to tell apart; the eye keeps returning to the legend |
 | **W2** | The gender comparison readers want is buried under two encodings at once |
 | **W3** | Only four points across twenty years, unevenly spaced, so most of the series is invisible, and the static format can't answer "what was the value in 2017?" either |
@@ -121,7 +121,7 @@ A gender toggle shows one set of dumbbells at a time, and every row also carries
 
 ::: fit-col
 | Fixes | Improvement |
-|------------------------------------|------------------------------------|
+|----|----|
 | **W1, W2** | Dumbbell layout toggled by gender, so no second pair of lines competes for attention |
 | **W3** | Every year from 2003 to 2024 plotted, both endpoints labelled for all 22 years |
 | **W4** | A background histogram layered behind every row's dumbbell, with optional mean/mode markers, so the median line is no longer the only statistic on screen |
@@ -173,8 +173,8 @@ The background histogram draws on SingStat's age-band counts, published for all 
 
   // barLo/barHi bound the histogram's colour scale: barLo is a near-white starting tint so empty bands stay quiet, barHi is a clearly saturated version of the gender colour.
   var PAL={
-    groom:{first:'#7b9acc',remar:'#2f4b7c',bar:'#7d9bc9',barLo:'#eef2fa',barHi:'#5f84bd',line:'#1f3a63',label:'Grooms',title:'#2f4b7c',bandKey:GROOM_BANDS,imgFirst:GROOM_IMG_FIRST,imgRemar:GROOM_IMG_REMAR},
-    bride:{first:'#d98fae',remar:'#a8456b',bar:'#cf82a4',barLo:'#fbeef4',barHi:'#c06b93',line:'#7a2c49',label:'Brides',title:'#a8456b',bandKey:BRIDE_BANDS,imgFirst:BRIDE_IMG_FIRST,imgRemar:BRIDE_IMG_REMAR}
+    groom:{first:'#7b9acc',remar:'#2f4b7c',bar:'#7d9bc9',barLo:'#eef2fa',barHi:'#5f84bd',line:'#152c4d',label:'Grooms',title:'#2f4b7c',bandKey:GROOM_BANDS,imgFirst:GROOM_IMG_FIRST,imgRemar:GROOM_IMG_REMAR},
+    bride:{first:'#d98fae',remar:'#a8456b',bar:'#cf82a4',barLo:'#fbeef4',barHi:'#c06b93',line:'#5e2138',label:'Brides',title:'#a8456b',bandKey:BRIDE_BANDS,imgFirst:BRIDE_IMG_FIRST,imgRemar:BRIDE_IMG_REMAR}
   };
   // WCAG 3:1 graphical-object contrast against both bar tints
   var MODE_COLOR='#5fe0c0', MEAN_COLOR='#ff5a36';
@@ -294,10 +294,10 @@ The background histogram draws on SingStat's age-band counts, published for all 
       // stroked in the gender's dark remar tone (not the light bar tint), so the connector
       // reads clearly against the histogram instead of blending into it
       row.append('line').attr('x1', x1).attr('y1', lineY).attr('x2', x2).attr('y2', lineY)
-        .attr('stroke', p.line).attr('stroke-width', 2.6).attr('stroke-linecap', 'round');
+        .attr('stroke', p.line).attr('stroke-width', 2.2).attr('stroke-linecap', 'round');
 
-      haloText(row.append('text').attr('x', (x1+x2)/2).attr('y', lineY-16).attr('text-anchor', 'middle')
-        .attr('font-size', 12).attr('fill', '#7a8494').attr('font-weight', 700)).text(gap.toFixed(1));
+      haloText(row.append('text').attr('x', (x1+x2)/2).attr('y', lineY-9).attr('text-anchor', 'middle')
+        .attr('font-size', 12).attr('fill', '#3a4356').attr('font-weight', 700)).text(gap.toFixed(1));
 
       row.append('image').attr('href', p.imgFirst).attr('x', x1-IMG_R).attr('y', lineY-IMG_R).attr('width', 2*IMG_R).attr('height', 2*IMG_R);
       row.append('image').attr('href', p.imgRemar).attr('x', x2-IMG_R).attr('y', lineY-IMG_R).attr('width', 2*IMG_R).attr('height', 2*IMG_R);
@@ -366,7 +366,7 @@ Preview of the cleaned median-age table the dumbbell reads from:
 
 ::: compact-table
 | year | groom_first | groom_remarry | bride_first | bride_remarry | groom_gap | bride_gap |
-|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
+|------|-------------|---------------|-------------|---------------|-----------|-----------|
 | 2003 | 29.1        | 40.2          | 26.6        | 34.2          | 11.1      | 7.6       |
 | 2010 | 30.0        | 41.8          | 27.7        | 36.3          | 11.8      | 8.6       |
 | 2015 | 30.3        | 43.3          | 28.2        | 37.5          | 13.0      | 9.3       |
@@ -420,7 +420,7 @@ Five sequential stages resolve this.
 
 ::: fit-col
 | Stage | Action |
-|------------------------------------|------------------------------------|
+|----|----|
 | **1. Import** | Read the CSV, skip ten metadata rows, keep the year headers as a separate vector |
 | **2. Baseline check** | Record raw dimensions, missing cells, and year range as a reference to reconcile against |
 | **3. Label** | Tag each row from its text using the `" - "` delimiter, carry type and sex onto indented rows |
@@ -833,7 +833,7 @@ They are delaying it, and who delays the most is changing.
 
 ::: fit-col
 | Member | Responsibilities |
-|------------------------------------|------------------------------------|
+|----|----|
 | Pang Shi Qi | Framed the problem: introduced the original chart and evaluated what design choices worked before proposing changes |
 | Than Shu En | Diagnosed six specific weaknesses in the original chart, then designed and built the interactive D3 dumbbell chart that fixes them |
 | Lee Jia Shin | Sourced the SingStat tables and engineered the five-stage R pipeline that turns the raw export into analysis-ready data |
