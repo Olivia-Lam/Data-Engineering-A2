@@ -859,48 +859,78 @@ Brides rise faster, so the age difference slowly closes.
 :::
 ::::::
 
+
+
 ## Findings and Limitations {.smaller}
 
+Three regressions back up what the chart shows. Each comes with a caveat worth knowing.
+
+:::::: columns
+:::: {.column width="52%"}
 ::: box
-**What the numbers say.** Singaporeans marry later, and the pace depends on both gender and marriage order.
-Brides drive the first-marriage rise, climbing almost twice as fast as grooms (A1).
-Re-marriage age is pulling further away from first-marriage age for both genders, not holding at a fixed distance (A2).
-And even though grooms and brides move together closely (*r* = 0.95), the gap between them keeps narrowing, year on year (A3).
-None of that is visible in a single-panel line chart with four labelled points; it only shows up once the data is re-plotted around the gap itself.
+**Findings**
+
+- Bride first-marriage age rises about 0.14 years every year, versus 0.07 for grooms, almost double the rate (A1).
+- The gap between first marriage and re-marriage widens for both genders: grooms from 11.1 to 13.9 years, brides from 7.6 to 10.0 years, over 2003 to 2024 (A2).
+- The gender gap at first marriage narrows from 2.5 to 1.5 years, even though grooms' and brides' ages track each other closely (*r* = 0.95) (A3).
+:::
+::::
+
+:::: {.column width="48%"}
+::: {.box .slate-box}
+**Caveats**
+
+- Groom re-marriage age dips in 2020 to 2021, likely Covid-related court disruption, then recovers by 2022. This dip is why A2 fits more loosely than A1.
+- The background histogram (M830170) counts all marriage orders together. SingStat does not publish it split by first marriage versus re-marriage, so it is a rough guide, not an exact match to the line it sits behind.
+- Each regression uses 22 yearly medians (one per year, 2003 to 2024), not individual marriage records. The slopes describe the typical year, not any one couple.
+- A3's correlation shows the two age series moving together. It does not show that one causes the other.
+:::
+::::
+::::::
+
+::: small
+Data: SingStat Table M830169 (median age by gender and marriage order) and Table M830170 (age band counts), 2003 to 2024.
+Method: ordinary least squares regression fitted per gender for A1 and A2; Pearson correlation for A3. Full model output on the A1 to A3 slides.
 :::
 
-```{=html}
-<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:2px 0 12px;">
-  <div style="flex:1 1 170px;background:#eef1f7;border-radius:8px;padding:8px 12px;text-align:center;">
-    <div style="font-size:11px;color:#5f6b7a;font-family:Inter,sans-serif;">A1 &middot; Age rise per year</div>
-    <div style="font-size:16px;font-weight:700;color:#2f4b7c;font-family:Inter,sans-serif;">Brides 0.14 yr, grooms 0.07 yr</div>
-  </div>
-  <div style="flex:1 1 170px;background:#eef1f7;border-radius:8px;padding:8px 12px;text-align:center;">
-    <div style="font-size:11px;color:#5f6b7a;font-family:Inter,sans-serif;">A2 &middot; Gap widening, 2003&ndash;2024</div>
-    <div style="font-size:16px;font-weight:700;color:#2f4b7c;font-family:Inter,sans-serif;">Grooms +2.8 yr, brides +2.4 yr</div>
-  </div>
-  <div style="flex:1 1 170px;background:#eef1f7;border-radius:8px;padding:8px 12px;text-align:center;">
-    <div style="font-size:11px;color:#5f6b7a;font-family:Inter,sans-serif;">A3 &middot; Gender gap, 2003&ndash;2024</div>
-    <div style="font-size:16px;font-weight:700;color:#2f4b7c;font-family:Inter,sans-serif;">2.5 yr &rarr; 1.5 yr</div>
-  </div>
-</div>
-```
+## Future Improvements {.smaller}
 
+The redesign fixes the six weaknesses named earlier. These are the next steps we did not have scope or data for in this proposal.
+
+:::::: columns
+:::: {.column width="50%"}
+::: box
+**Using the data we already have**
+
+- Split by marriage type. M830169 also records Civil and Muslim marriage ages, which this proposal collapses into Total. Showing them separately would tell us whether the closing gender gap holds across both types, or is driven by one.
+- Fit the pandemic years separately. A short model for 2020 to 2021, apart from the rest of the series, would isolate that dip from the underlying trend and should tighten A2's fit.
+- Extend the trend line forward. Projecting A1's fitted line past 2024, with a prediction interval, would give a concrete estimate for when the gender gap might close if the current pace holds.
+:::
+::::
+
+:::: {.column width="50%"}
 ::: {.box .slate-box}
-**Limitations, kept in view.** Three things temper the headline.
-*Covid:* groom re-marriage age falls from 44.2 in 2019 to 42.4 in 2021, then recovers to 44.6 in 2022.
-Re-marriages are few enough that their annual medians swing with registration disruption, so the 2020–2021 dip is annotated on the chart rather than smoothed away.
-*Background histogram scope:* it draws on age-band counts for all marriage orders combined, not split by first marriage versus re-marriage, so it describes that year's overall population rather than the exact series being plotted.
-*Correlation, not causation:* A3's *r* = 0.95 says grooms' and brides' ages move together, not that one drives the other.
-Both plausibly respond to the same underlying trend toward later marriage generally.
+**Needs data we do not have yet**
+
+- A histogram split by marriage order. SingStat would need to publish age-band counts for first marriage and re-marriage separately, matching the exact line each histogram sits behind.
+- Data before 2003. M830169 goes back to 1961. Adding those decades would show whether the closing gender gap is a recent shift or a longer-running one.
+- A comparison country. A similarly structured dataset from a neighbouring country would show whether this pattern is specific to Singapore or part of a broader regional trend.
+:::
+::::
+::::::
+
+::: small
+None of these depend on this project's own pipeline. They depend on SingStat, or another agency, publishing a table that does not currently exist in this form.
 :::
 
 ## Conclusion {.smaller}
 
-- We took one thread from a Mothership.SG report and rebuilt it around the number it left implicit: the **gap** between first and re-marriage age, turning an implicit read into the explicit subject of the chart.
-- The interactive dumbbell fixes all six weaknesses of the original: it shows every year, labels every value, prints every gap, and replaces a four-line tangle with a clean gender toggle and a background age-band histogram layered into the same plot.
-- Three analyses turn the visual into defensible, statistically significant claims (all *p* \< .001): brides drive the first-marriage rise (A1), both gaps are widening (A2), and the genders move together while their gap closes (A3).
-- Zooming out, the story still lines up with Singapore's broader "marrying later" narrative, but it identifies *who* is doing more of the delaying, which the original never could: brides, not grooms, and by a growing margin.
+The original chart already showed that Singaporeans are marrying later.
+It could not show two things the redesign brings out: how far first marriage now trails re-marriage, and which gender is closing that distance faster.
+
+- Every one of the six weaknesses named at the start maps to a specific fix in the redesign, not a general restyle. A reader can check each one against the original chart directly.
+- All three regressions are significant at *p* \< .001, based on 22 years of data (2003 to 2024).
+- Brides are closing the age gap with grooms at first marriage, from 2.5 to 1.5 years, while both genders drift further from their own re-marriage age. The original chart's four overlapping lines make this pattern impossible to see; the redesign puts it in the connector labels directly.
 
 ```{=html}
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px 14px;max-width:820px;margin:10px auto 4px;font-family:Inter,sans-serif;font-size:11.5px;color:#3a4356;">
