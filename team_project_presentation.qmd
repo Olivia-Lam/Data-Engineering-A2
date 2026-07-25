@@ -65,7 +65,7 @@ It plots four series from 2003 to 2023.
 
 ::::: columns
 ::: {.column width="58%"}
-![Original static four-line chart, Mothership.SG (2024), sourced from SingStat.](https://static.mothership.sg/1/2024/07/Screenshot-2024-07-15-at-7.46.14%E2%80%AFPM.png){width="100%"}
+![Original static four-line chart, Mothership.SG (2024), sourced from SingStat.](https://static.mothership.sg/1/2024/07/Screenshot-2024-07-15-at-7.46.14%E2%80%AFPM.png){alt="Original static four-line chart, Mothership.SG (2024), sourced from SingStat." width="100%"}
 :::
 
 ::: {.column width="42%"}
@@ -100,37 +100,39 @@ A non-specialist takes in the headline, that people marry later, within a few se
 
 ::: fit-col
 | \# | Weakness |
-|----|----|
-| **W1** | The two closely spaced line pairs are hard to tell apart; the eye keeps returning to the legend |
+|------------------------------------|------------------------------------|
+| **W1** | The two closely spaced line pairs are hard to differentiate. The eye keeps returning to the legend |
 | **W2** | The gender comparison readers want is buried under two encodings at once |
-| **W3** | Only four points across twenty years, unevenly spaced, so most of the series is invisible, and the static format can't answer "what was the value in 2017?" either |
-| **W4** | Median age is the only statistic shown; there's no sense of spread, so readers can't tell whether that "typical" age represents most couples or hides a wide range |
-| **W5** | The most interesting number, the closing gender gap, is never shown |
-| **W6** | Red and orange sit close for readers with colour vision deficiency |
+| **W3** | Only four points unevenly spaced across twenty years, so most of the series is invisible. The static format also cannot answer specific values |
+| **W4** | The most interesting number (closing gender gap) is never shown |
+| **W5** | Median age is the only statistic shown. There is no sense of spread, so readers cannot tell whether that typical age represents most couples or hides a wide range |
+| **W6** | The colour choice may not hold up for all readers. Red and orange sit close for readers with colour vision deficiency |
 :::
 
 ::: small
-One root cause: a detailed dataset served through a format, four overlapping lines with four labelled points, that cannot show gaps, trends, distributions, or intermediate values without work from the reader.
-W3 folds together what were originally two separate points (sparse points, and no way to look up a value); on review they were really one problem with two symptoms, so we merged them.
+One root cause: The chart serves a detailed dataset through a format, four overlapping static lines with only four labelled points, that cannot show gaps, trends, or precise intermediate values without extra work from the reader.
 :::
 
-## Our redesign: an interactive dumbbell {.smaller}
+## Our proposed redesign: an interactive dumbbell {.smaller}
 
-Each bar spans one year, from the first-marriage age to the re-marriage age, so the **gap becomes the visual subject** rather than something the reader calculates.
-A gender toggle shows one set of dumbbells at a time, and every row also carries its own age-band histogram as a background ridge, so the distribution and the dumbbell share one axis instead of living in separate charts.
+Each bar spans one year.
+The **gap** from the first-marriage age to the re-marriage age **becomes the visual subject** rather than something the reader calculates.
+A gender toggle shows one set of dumbbells at a time.
+Every row also carries its own age-band histogram as a background ridge, so the distribution and the dumbbell share one axis instead of living in separate charts.
 
 ::: fit-col
 | Fixes | Improvement |
-|----|----|
+|------------------------------------|------------------------------------|
 | **W1, W2** | Dumbbell layout toggled by gender, so no second pair of lines competes for attention |
 | **W3** | Every year from 2003 to 2024 plotted, both endpoints labelled for all 22 years |
-| **W4** | A background histogram layered behind every row's dumbbell, with optional mean/mode markers, so the median line is no longer the only statistic on screen |
-| **W5** | The numeric gap printed on every connector |
-| **W6** | An interactive toggle; only one gender's colour is ever on screen |
+| **W4** | The numeric gap printed on every connector |
+| **W4, W5** | Label both endpoints of every dumbbell with their exact value |
+| **W5** | A background histogram layered behind every row's dumbbell with optional mean/mode markers, so the median line is no longer the only statistic on screen |
+| **W5, W6** | An interactive toggle. Only one gender's colour is ever on screen |
 :::
 
 ::: small
-One shared plot, one coordinate system: the histogram and the dumbbell are two geoms layered on the same axes, not two separate charts, so the improved visualization stays a single plot rather than a dashboard.
+One shared plot, one coordinate system: The histogram and the dumbbell are two geoms layered on the same axes and not two separate charts, so the improved visualization stays a single plot rather than a dashboard.
 The background histogram draws on SingStat's age-band counts, published for all marriage orders combined rather than split by first marriage versus re-marriage [@singstat_m830170].
 :::
 
@@ -477,7 +479,7 @@ Five sequential stages resolve this.
 :::: {.column width="50%"}
 ::: {.fit-col .compact-table}
 | Stage (M830169) | Action |
-|----|----|
+|------------------------------------|------------------------------------|
 | **1. Import** | Skip 10 metadata rows, keep year headers as a vector |
 | **2. Baseline check** | Record raw shape, missing cells, year range |
 | **3. Label** | Tag type/gender from the `" - "` delimiter |
@@ -932,7 +934,7 @@ They are delaying it, and who delays the most is changing.
 
 ::: fit-col
 | Member | Responsibilities |
-|----|----|
+|------------------------------------|------------------------------------|
 | Pang Shi Qi | Framed the problem: introduced the original chart and evaluated what design choices worked before proposing changes |
 | Than Shu En | Diagnosed six specific weaknesses in the original chart, then designed and built the interactive D3 dumbbell chart that fixes them |
 | Lee Jia Shin | Sourced the SingStat tables and engineered the five-stage R pipeline that turns the raw export into analysis-ready data |
