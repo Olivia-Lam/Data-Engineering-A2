@@ -150,6 +150,17 @@ $code-color: $slate-700;
 }
 .reveal code { color: $slate-700; }
 
+.reveal .slides section:nth-of-type(2) {
+  font-size: 0.8em;
+  overflow-y: hidden !important;
+}
+
+// The deck sets scrollable: true globally, so a tall slide scrolls the whole
+#pipeline-code-3 div.sourceCode {
+  max-height: 130px;
+  overflow-y: auto;
+}
+
 // Callout-style boxes
 .reveal .box {
   background: #fff;

@@ -505,112 +505,104 @@ Five sequential stages resolve this.
 Each stage reads the output of the one before and produces a new object, so any single step stays inspectable and re-runnable on its own.
 :::
 
-## The pipeline in code {#pipeline-code .smaller}
+## The pipeline in code (1 of 3) · Import and baseline {.smaller}
 
-The same five stages as the previous slide, now as five separate, foldable code chunks.
+The same five stages as the previous slide, now with the full, unfolded code, starting with the two setup stages for M830169.
 
 **Stage 1 · Import**
 
 ```{r}
 #| eval: false
 #| echo: true
-#| code-fold: true
-#| code-summary: "Show the code"
-library(tidyverse) # <1>
+library(tidyverse)
 
-raw <- read_csv("data/raw/M830169_raw.csv", skip = 10, col_names = FALSE) # <2>
-years_header <- raw |> slice(1) |> select(-1) |> unlist() |> as.numeric() # <3>
+raw <- read_csv("data/raw/M830169_raw.csv", skip = 10, col_names = FALSE)
+years_header <- raw |> slice(1) |> select(-1) |> unlist() |> as.numeric()
 ```
 
-1.  `tidyverse` bundles `readr`, `dplyr`, `tidyr`, and `stringr`, everything the rest of the pipeline calls on.
-2.  Skips the ten metadata rows above the actual table; `col_names = FALSE` keeps the raw layout so row 1 can still be read as data rather than headers.
-3.  Row 1 holds the year labels (2003…2025). Pulled out now and kept as a separate vector, since Stage 3 reattaches it explicitly as column names.
+::: small
+Skips the ten metadata rows and reads the table raw, then pulls row 1's year labels (2003…2025) into their own vector, since Stage 3 reattaches them as real column names.
+:::
 
 **Stage 2 · Baseline check**
 
 ```{r}
 #| eval: false
 #| echo: true
-#| code-fold: true
-#| code-summary: "Show the code"
 baseline <- list(
-  n_rows    = nrow(raw),      # <1>
-  n_missing = sum(is.na(raw)) # <2>
+  n_rows    = nrow(raw),
+  n_missing = sum(is.na(raw))
 )
 ```
 
-1.  Row count taken straight off the untouched import, before any filtering or reshaping.
-2.  Missing-cell count recorded here too, so Stage 5's checks have a known-good reference to compare against.
+::: small
+Records the row count and missing-cell count straight off the untouched import, so Stage 5's checks have a good reference to compare against.
+:::
+
+## The pipeline in code (2 of 3) · Label, reshape and filter {.smaller}
+
+The two heaviest stages: turning row text into type/gender columns, then pivoting long and back to wide.
 
 **Stage 3 · Label**
 
 ```{r}
 #| eval: false
 #| echo: true
-#| code-fold: true
-#| code-summary: "Show the code"
 marriage <- raw |> slice(-1) |>
-  mutate(label = str_trim(X1),                                          # <1>
-         is_header = str_detect(label, " - "),                          # <2>
-         type   = if_else(is_header, str_split_i(label, " - ", 1), NA), # <3>
+  mutate(label = str_trim(X1),
+         is_header = str_detect(label, " - "),
+         type   = if_else(is_header, str_split_i(label, " - ", 1), NA),
          gender = if_else(is_header, str_split_i(label, " - ", 2), NA)) |>
-  fill(type, gender, .direction = "down") |>                            # <4>
-  mutate(order = if_else(is_header, "All", label)) |>                   # <5>
-  set_names(c("X1","label","is_header","type","gender","order", years_header)) # <6>
+  fill(type, gender, .direction = "down") |>
+  mutate(order = if_else(is_header, "All", label)) |>
+  set_names(c("X1","label","is_header","type","gender","order", years_header))
 ```
 
-1.  Drops the header row consumed in Stage 1, then trims stray whitespace from every remaining row label.
-2.  Header rows read like `"Total Marriages - Grooms"`; the `" - "` delimiter is what tells a header row apart from an indented data row.
-3.  `str_split_i` reads the marriage type and gender straight out of that header label.
-4.  Indented data rows (e.g. `"First Marriages"`) carry no type/gender of their own, so `fill()` carries the last header's values down onto them.
-5.  Header rows get `order = "All"`; every other row keeps its own label (`"First Marriages"`, `"Remarriages"`, …) as the marriage order.
-6.  Reattaches the `years_header` vector from Stage 1 as the real column names, replacing the placeholder `V2, V3, …` names.
+::: small
+Header rows like `"Total Marriages - Grooms"` give up type and gender via the `" - "` delimiter; `fill()` carries those values down onto the indented data rows beneath them, and the Stage 1 year vector is reattached as real column names.
+:::
 
 **Stage 4 · Reshape and filter**
 
 ```{r}
 #| eval: false
 #| echo: true
-#| code-fold: true
-#| code-summary: "Show the code"
 marriage <- marriage |>
   pivot_longer(-c(X1,label,is_header,type,gender,order),
-               names_to = "year", values_to = "age") |>                 # <1>
-  filter(type == "Total Marriages",                                     # <2>
-         order %in% c("First Marriages","Remarriages"),                 # <3>
-         as.integer(year) >= 2003) |>                                   # <4>
-  pivot_wider(names_from = c(gender, order), values_from = age)         # <5>
+               names_to = "year", values_to = "age") |>
+  filter(type == "Total Marriages",
+         order %in% c("First Marriages","Remarriages"),
+         as.integer(year) >= 2003) |>
+  pivot_wider(names_from = c(gender, order), values_from = age)
 ```
 
-1.  One column per year becomes one row per year; every later step, and every chart on this slide, assumes long format.
-2.  Keeps only the combined-order total, dropping the by-citizenship and by-ethnicity breakdowns the raw file also carries.
-3.  Restricts marriage order to first marriages and remarriages, the two series the dumbbell chart needs.
-4.  Matches the 2003–2024 window used throughout the deck, so it lines up with the year the original chart starts.
-5.  Pivots back to wide, keyed this time on gender and order, so `groom_first`, `groom_remarry`, `bride_first`, and `bride_remarry` each become their own column.
+::: small
+Pivots to one row per year, keeps only combined-order Total Marriages for first marriages and remarriages from 2003 on, then pivots back wide so `groom_first`, `groom_remarry`, `bride_first`, and `bride_remarry` each become their own column.
+:::
+
+## The pipeline in code (3 of 3) · Schema, gap and M830170 {#pipeline-code-3 .smaller}
+
+The final validation stage for M830169, and the condensed pattern that produces M830170.
 
 **Stage 5 · Gap and schema**
 
 ```{r}
 #| eval: false
 #| echo: true
-#| code-fold: true
-#| code-summary: "Show the code"
 marriage <- marriage |>
-  mutate(groom_gap = groom_remarry - groom_first,                       # <1>
+  mutate(groom_gap = groom_remarry - groom_first,
          bride_gap = bride_remarry - bride_first)
 
-stopifnot(nrow(marriage) == 22,                                         # <2>
-          all(marriage$groom_gap > 0, marriage$bride_gap > 0),          # <3>
-          n_distinct(marriage$year) == nrow(marriage))                  # <4>
+stopifnot(nrow(marriage) == 22,
+          all(marriage$groom_gap > 0, marriage$bride_gap > 0),
+          n_distinct(marriage$year) == nrow(marriage))
 
-write_csv(marriage, "data/clean/M830169_cleaned.csv")                   # <5>
+write_csv(marriage, "data/clean/M830169_cleaned.csv")
 ```
 
-1.  The gap columns are computed once, here, so every chart and analysis slide downstream reads the same number instead of recomputing it inline.
-2.  Confirms the row count matches the expected 22 years (2003–2024) before the file is trusted downstream.
-3.  Re-marriage age should always exceed first-marriage age; this fails loudly if a join or filter went wrong upstream.
-4.  Guards against a duplicated year slipping through the pivot undetected.
-5.  Writes the cleaned, validated table that every other slide in this deck reads from.
+::: small
+Computes the gap columns once so every downstream chart reads the same number, checks the row count and gap sign against the expected shape, and writes the validated table every other slide reads from.
+:::
 
 **M830170 · condensed**
 
@@ -619,26 +611,22 @@ No baseline-check or gap stage is needed here, so the same skip/label/reshape pa
 ```{r}
 #| eval: false
 #| echo: true
-#| code-fold: true
-#| code-summary: "Show the code"
-bands <- read_csv("data/raw/M830170_raw.csv", skip = 10, col_names = FALSE) |> # <1>
+bands <- read_csv("data/raw/M830170_raw.csv", skip = 10, col_names = FALSE) |>
   slice(-1) |>
   mutate(label = str_trim(X1),
          gender = if_else(str_detect(label, " - "), str_split_i(label, " - ", 2), NA)) |>
-  fill(gender, .direction = "down") |>                                        # <2>
-  filter(str_detect(label, "Total Marriages")) |>                             # <3>
+  fill(gender, .direction = "down") |>
+  filter(str_detect(label, "Total Marriages")) |>
   pivot_longer(-c(X1, label, gender), names_to = "age_band", values_to = "count") |>
-  pivot_wider(names_from = age_band, values_from = count)                     # <4>
+  pivot_wider(names_from = age_band, values_from = count)
 
-stopifnot(nrow(bands) == 44)                                                  # <5>
+stopifnot(nrow(bands) == 44)
 write_csv(bands, "data/clean/M830170_cleaned.csv")
 ```
 
-1.  Same import shape as M830169: skip the ten metadata rows, keep the age-band headers.
-2.  `fill()` carries each header row's gender down onto its indented age-band rows, the same trick Stage 3 used for type and gender.
-3.  Keeps only the combined-order Total Marriages row, since M830170 is never split by marriage order.
-4.  One pivot wide is enough; there's no gap to compute, so no second re-pivot like Stage 5's.
-5.  22 years × 2 genders = 44 rows expected; this is the lightweight equivalent of Stage 2's baseline check.
+::: small
+Same import and `fill()` trick as M830169, but keeps only the combined Total Marriages row and pivots wide once on age band; the 44-row check (22 years × 2 genders) stands in for Stage 2's baseline check.
+:::
 
 ## A1: Brides' First-Marriage Age Rises Twice as Fast {.smaller}
 
