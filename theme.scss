@@ -67,6 +67,14 @@ $code-color: $slate-700;
   padding: 6% 8%;
   border: 1.5px solid #c8791f;
   border-radius: 12px;
+  // Faint cover photo behind the title text. A paper-tinted, mostly-opaque
+  // gradient is layered on top of the photo in the same background-image
+  // property (rather than a separate ::before/absolute element, which risks
+  // throwing off height calculations reveal.js relies on for slide-to-slide
+  // scrolling) so the photo reads as texture, not a competing visual.
+  background-image: linear-gradient(rgba(250,248,244,0.88), rgba(250,248,244,0.88)), url("assets/cover-hands.png");
+  background-size: cover;
+  background-position: center 35%;
 }
 #title-slide .quarto-title-block,
 #title-slide .quarto-title-meta,
@@ -97,6 +105,65 @@ $code-color: $slate-700;
 #title-slide .author, #title-slide .date {
   color: $muted;
   font-size: 0.7em;
+}
+
+// Section-divider slides: a plain centered title + one-line description,
+// used between segments of the deck (Original Work / Our Improvements /
+// Data Engineering / Data Analysis / Takeaway) so the audience always knows
+// which part of the story they're in.
+.reveal .slides section.section-divider {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 6% 8%;
+  border: 1.5px solid #c8791f;
+  border-radius: 12px;
+}
+.section-divider h1 {
+  border-bottom: none !important;
+  font-size: 1.8em;
+  margin-bottom: 0.3em;
+  padding-bottom: 0;
+}
+.section-divider .section-sub {
+  font-family: $font-family-sans-serif;
+  color: $amber-700;
+  font-weight: 600;
+  font-size: 0.65em;
+}
+
+// Outline (TOC) slide. Promoting the section-divider headings to h1 (above)
+// gives Quarto's auto-generated TOC a real two-level hierarchy: each section
+// name is a top-level <li>, and its slides nest underneath in their own
+// <ul>. Laid out in two columns with a smaller, indented, muted sub-list so
+// ~25 entries fit on one slide without running off the bottom.
+#TOC nav[role="doc-toc"] > ul {
+  column-count: 2;
+  column-gap: 2.2em;
+  font-size: 0.78em;
+  margin-top: 0.3em;
+}
+#TOC nav[role="doc-toc"] > ul > li {
+  break-inside: avoid;
+  margin: 0.35em 0;
+  font-weight: 600;
+  color: $slate-900;
+}
+#TOC nav[role="doc-toc"] ul ul {
+  margin: 0.2em 0 0.1em 1.1em;
+  padding: 0;
+}
+#TOC nav[role="doc-toc"] ul ul li {
+  font-weight: 400;
+  color: $muted;
+  margin: 0.2em 0;
+}
+#TOC nav[role="doc-toc"] a {
+  text-decoration: none;
 }
 
 // Accent helpers
@@ -150,9 +217,13 @@ $code-color: $slate-700;
 }
 .reveal code { color: $slate-700; }
 
-.reveal .slides section:nth-of-type(2) {
+// Was ".reveal .slides section:nth-of-type(2)" -- a positional selector that
+// happened to match the auto-generated Outline/TOC slide only because it was
+// always the 2nd section. Fragile (any new slide before it breaks the
+// match), and overflow-y:hidden was actively clipping the TOC's own list.
+// Targeted by #TOC directly instead; see the dedicated TOC rules above.
+#TOC {
   font-size: 0.8em;
-  overflow-y: hidden !important;
 }
 
 // The deck sets scrollable: true globally, so a tall slide scrolls the whole
@@ -176,6 +247,13 @@ $code-color: $slate-700;
 
 // Two-column helper spacing
 .reveal .columns { align-items: center; }
+// Analysis slides (A1-A3): the stats frame and the chart card should start
+// at the same top edge, instead of both being vertically centered against
+// each other. Deliberately flex-start, not stretch: stretch would inflate
+// both columns to match the slide's full fixed height (720px), leaving a
+// large blank gap inside whichever column has less content and forcing the
+// slide to scroll -- flex-start lets each column size to its own content.
+.reveal .columns.top-align { align-items: flex-start; }
 
 // Footer / slide number
 .reveal .slide-number {
@@ -192,6 +270,35 @@ $code-color: $slate-700;
   padding: 6px 10px 2px;
   box-shadow: 0 2px 6px rgba(35,48,74,0.07);
 }
+
+// Mini D3 line/scatter chart wrapper (A1/A2/A3 analysis slides) -- same
+// white card look as the dumbbell wrapper above, just without its toggle/
+// legend header bits.
+.mini-chart-wrap {
+  background: #fff;
+  border: 1px solid #e4ddd2;
+  border-radius: 8px;
+  padding: 10px 12px 6px;
+  box-shadow: 0 2px 6px rgba(35,48,74,0.07);
+}
+// Defensive clip: a fitted line (e.g. A3's least-squares line) can predict a
+// y-value outside the plotted axis range, which would otherwise draw past
+// the card's rounded border. Clipping here is a backstop in addition to the
+// JS-side fix that clamps the line to the visible axis range.
+.mini-chart-wrap svg, .dumbbell-wrap svg { overflow: hidden; }
+
+// Plain transparent-background rectangle frame, used beside the mini charts
+// on the analysis slides. Distinct from .box above, which has a solid white
+// fill, left accent border, and shadow -- this is just an outline.
+.reveal .frame {
+  background: transparent;
+  border: 1px solid #cdbfa8;
+  border-radius: 6px;
+  padding: 0.5em 0.9em;
+  margin: 0.4em 0;
+}
+.reveal .frame ul { margin: 0.2em 0 0.2em 1.1em; padding: 0; }
+.reveal .frame li { margin: 0.3em 0; }
 .dumbbell-toggle button {
   font-family: "Inter", sans-serif;
   font-size: 15px;
