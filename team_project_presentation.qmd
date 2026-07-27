@@ -551,7 +551,7 @@ From SingStat raw exports to a clean dataset
 
 ::::: {.column width="50%"}
 ::: {.box .slate-box .small-box}
-**M830170** · Marriages by Age Group and Previous Marital Status [@singstat_m830170]
+**M830170** : Marriages by Age Group and Previous Marital Status [@singstat_m830170]
 :::
 
 ::: compact-table
@@ -577,7 +577,7 @@ Ten metadata rows precede the table, marriage type and sex are implied by row te
 Five sequential stages resolve this.
 
 ::: small
-**M830169 pipeline** · produces the dumbbell input
+**M830169 pipeline** : produces the dumbbell input
 :::
 
 ```{=html}
@@ -793,7 +793,7 @@ write_csv(marriage, "data/clean/M830169_cleaned.csv")
 Computes the gap columns once so every downstream chart reads the same number, checks the row count and gap sign against the expected shape, and writes the validated table every other slide reads from.
 :::
 
-**M830170 : condensed**
+**M830170 : Condensed**
 
 No baseline-check or gap stage is needed here, so the same skip/label/reshape pattern collapses into one chain.
 
