@@ -1,7 +1,7 @@
 /*-- scss:defaults --*/
 
 // Fonts
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 // Palette (matches CA1 proposal: slate blue + warm amber on off-white)
 $slate-900: #23304a;
@@ -53,59 +53,80 @@ $code-color: $slate-700;
   margin-bottom: 0.5em;
 }
 
-// Title slide. !important throughout: .reveal .slides section (above) and
-// Quarto's own title-block CSS both set text-align on these same elements,
-// and neither can be relied on to lose the cascade by order alone.
+// Title slide. Left-aligned editorial layout: a small kicker line (repurposed
+// "subtitle" metadata field), a big multi-line multi-colour headline built
+// from bracketed spans in the YAML title string, then the author list.
+//
+// The node-graph and ring-photo art are two pre-composited, transparent PNGs
+// (assets/nodes.png behind, assets/hand_ring.png in front), stacked purely as
+// CSS background-image layers -- not as separate ::before/::after elements.
+// Backgrounds never contribute to a box's own height the way an absolutely-
+// positioned child element can, so this can't reproduce the earlier bug
+// where decorative art inflated #title-slide's measured height and pushed
+// every later slide down with it.
+//
+// Both layers use "contain" rather than "cover": the slide box's aspect
+// ratio (1100x720) is narrower than the source PNGs' (1920x1080), so
+// "cover" was scaling each one up enough to crop it (the top/right of the
+// ring photo's circle, and the outer nodes/lines of the graph). "contain"
+// fits each whole image with no cropping, at a slightly smaller size, and
+// each is anchored toward the corner it's designed to sit in.
 #title-slide {
   display: flex !important;
   flex-direction: column !important;
-  align-items: center !important;
   justify-content: center !important;
-  text-align: center !important;
+  align-items: flex-start !important;
+  text-align: left !important;
   height: 100%;
   box-sizing: border-box;
-  padding: 6% 8%;
-  border: 1.5px solid #c8791f;
-  border-radius: 12px;
-  // Faint cover photo behind the title text. A paper-tinted, mostly-opaque
-  // gradient is layered on top of the photo in the same background-image
-  // property (rather than a separate ::before/absolute element, which risks
-  // throwing off height calculations reveal.js relies on for slide-to-slide
-  // scrolling) so the photo reads as texture, not a competing visual.
-  background-image: linear-gradient(rgba(250,248,244,0.88), rgba(250,248,244,0.88)), url("assets/cover-hands.png");
-  background-size: cover;
-  background-position: center 35%;
+  padding: 5% 6%;
+  background-color: $paper;
+  background-image: url("assets/hand_ring.png"), url("assets/nodes.png");
+  background-repeat: no-repeat, no-repeat;
+  background-position: center top, right top;
+  background-size: contain, contain;
 }
-#title-slide .quarto-title-block,
-#title-slide .quarto-title-meta,
-#title-slide .title,
 #title-slide .subtitle,
-#title-slide .author,
-#title-slide .date {
-  text-align: center !important;
-  width: 100%;
-}
+#title-slide .title,
 #title-slide .quarto-title-authors {
-  display: flex !important;
-  flex-wrap: wrap;
-  justify-content: center !important;
-  width: 100%;
-}
-#title-slide .title {
-  font-size: 1.7em;
-  color: $slate-900;
-  line-height: 1.05;
+  text-align: left !important;
+  width: auto;
+  max-width: 56%;
 }
 #title-slide .subtitle {
-  color: $amber-700;
+  order: -1;
+  font-family: "Poppins", $font-family-sans-serif;
   font-weight: 600;
-  font-family: $font-family-sans-serif;
-  margin-top: 0.4em;
+  font-size: 0.85em;
+  color: $slate-900;
+  margin: 0;
 }
-#title-slide .author, #title-slide .date {
+#title-slide .title {
+  font-family: "Poppins", $font-family-sans-serif;
+  font-weight: 800;
+  font-size: 2.3em;
+  line-height: 1.08;
+  color: $slate-900;
+  margin: 0.15em 0;
+}
+// Each coloured word/phrase in the title is wrapped in a bracketed span --
+// e.g. [Singaporeans]{.tl .tl-amber} -- in the YAML title string. `.tl`
+// forces its own line without needing manual <br>s; the two colour classes
+// let the headline alternate between the two brand hues per line.
+#title-slide .title .tl { display: block; }
+#title-slide .title .tl-navy { color: $slate-900; }
+#title-slide .title .tl-amber { color: $amber-700; }
+// Helvetica Now Display is a licensed Monotype font with no open web
+// equivalent, so this falls back to the closest freely available match.
+#title-slide .quarto-title-authors {
+  display: block !important;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.5em;
+  font-weight: 600;
+  margin-top: 0.6em;
   color: $muted;
-  font-size: 0.7em;
 }
+#title-slide .quarto-title-author-name { text-align: left; }
 
 // Section-divider slides: a plain centered title + one-line description,
 // used between segments of the deck (Original Work / Our Improvements /
@@ -150,8 +171,11 @@ $code-color: $slate-700;
 #TOC nav[role="doc-toc"] > ul > li {
   break-inside: avoid;
   margin: 0.35em 0;
-  font-weight: 600;
+  font-weight: 700;
   color: $slate-900;
+}
+#TOC nav[role="doc-toc"] > ul > li > a {
+  font-weight: 700;
 }
 #TOC nav[role="doc-toc"] ul ul {
   margin: 0.2em 0 0.1em 1.1em;

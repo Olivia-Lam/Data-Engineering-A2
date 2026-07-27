@@ -1,7 +1,7 @@
 ---
-title: "Are Singaporeans Marrying Later?"
-subtitle: "Singapore's Shifting Age at First and Re-Marriage"
-author: "AAI1001 Team 3: Pang Shi Qi, Than Shu En, Lee Jia Shin, Olivia Lam, Natalie Peh"
+title: "[Are]{.tl .tl-navy} [Singaporeans]{.tl .tl-amber} [Marrying later?]{.tl .tl-navy}"
+subtitle: "AAI1001 Team 3:"
+author: "Olivia Lam Xuan En (2501492), Lee Jia Shin (2503254), Than Shu En (2503556), Pang Shi Qi (2503336), Natalie Peh (2501526)"
 format:
   revealjs:
     theme: [default, theme.scss]
