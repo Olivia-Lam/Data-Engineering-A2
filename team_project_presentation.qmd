@@ -767,7 +767,7 @@ That select matters: `pivot_wider()` treats every column not named in `names_fro
 Renames the four resulting columns to `groom_first`, `groom_remarry`, `bride_first`, `bride_remarry`.
 :::
 
-## The pipeline in code (3 of 3) : Schema, gap and M830170 {#pipeline-code-3 .smaller}
+## The pipeline in code : Schema, gap and M830170 {#pipeline-code-3 .smaller}
 
 The final validation stage for M830169, and the condensed pattern that produces M830170.
 
