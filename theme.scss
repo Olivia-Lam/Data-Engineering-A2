@@ -315,6 +315,23 @@ $code-color: $slate-700;
 .dumbbell-toggle button.active-groom { background: #2f4b7c; color: #fff; border-color: #2f4b7c; }
 .dumbbell-toggle button.active-bride { background: #a8456b; color: #fff; border-color: #a8456b; }
 
+.weakness-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 960px;
+  margin: 20px auto 10px;
+}
+.weakness-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f3eee6;
+  border: 1px solid #e4ddd2;
+  border-radius: 8px;
+  padding: 0.5em 0.8em;
+}
+
 // Mean/mode checkboxes, styled to match the pill toggle instead of the browser default
 .db-checkbox {
   display: flex;
