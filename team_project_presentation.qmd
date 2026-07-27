@@ -682,11 +682,11 @@ Five sequential stages resolve this.
 Each stage reads the output of the one before and produces a new object, so any single step stays inspectable and re-runnable on its own.
 :::
 
-## The pipeline in code (1 of 3) · Import and baseline {.smaller}
+## The pipeline in code: Import and baseline {.smaller}
 
 The same five stages as the previous slide, now with the full, unfolded code, starting with the two setup stages for M830169.
 
-**Stage 1 · Import**
+**Stage 1 : Import**
 
 ```{r}
 #| eval: true
@@ -701,7 +701,7 @@ years_header <- raw |> slice(1) |> select(-1) |> unlist() |> as.numeric()
 Skips the ten metadata rows and reads the table raw, then pulls row 1's year labels (1961…2025) into their own vector, since Stage 3 reattaches them as real column names.
 :::
 
-**Stage 2 · Baseline check**
+**Stage 2 : Baseline check**
 
 ```{r}
 #| eval: true
@@ -716,11 +716,11 @@ baseline <- list(
 Records the row count and missing-cell count straight off the untouched import, so Stage 5's checks have a good reference to compare against.
 :::
 
-## The pipeline in code (2 of 3) · Label, reshape and filter {.smaller}
+## The pipeline in code : Label, reshape and filter {.smaller}
 
 The two heaviest stages: turning row text into type/gender columns, then pivoting long and back to wide.
 
-**Stage 3 · Label**
+**Stage 3 : Label**
 
 ```{r}
 #| eval: true
@@ -742,7 +742,7 @@ Renaming after those columns exist would silently misalign names to columns once
 Header rows like `"Total Marriages - Grooms"` give up type and gender via the `" - "` delimiter, and `fill()` carries those values down onto the indented data rows beneath them.
 :::
 
-**Stage 4 · Reshape and filter**
+**Stage 4 : Reshape and filter**
 
 ```{r}
 #| eval: true
@@ -767,11 +767,11 @@ That select matters: `pivot_wider()` treats every column not named in `names_fro
 Renames the four resulting columns to `groom_first`, `groom_remarry`, `bride_first`, `bride_remarry`.
 :::
 
-## The pipeline in code (3 of 3) · Schema, gap and M830170 {#pipeline-code-3 .smaller}
+## The pipeline in code (3 of 3) : Schema, gap and M830170 {#pipeline-code-3 .smaller}
 
 The final validation stage for M830169, and the condensed pattern that produces M830170.
 
-**Stage 5 · Gap and schema**
+**Stage 5 : Gap and schema**
 
 ```{r}
 #| eval: true
@@ -793,7 +793,7 @@ write_csv(marriage, "data/clean/M830169_cleaned.csv")
 Computes the gap columns once so every downstream chart reads the same number, checks the row count and gap sign against the expected shape, and writes the validated table every other slide reads from.
 :::
 
-**M830170 · condensed**
+**M830170 : condensed**
 
 No baseline-check or gap stage is needed here, so the same skip/label/reshape pattern collapses into one chain.
 
